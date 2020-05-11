@@ -16,42 +16,37 @@ if __name__ == '__main__':
     # Create move group interface for a fetch robot
     move_group = MoveGroupInterface("arm", "base_link")
 
-    # Define ground plane
-    # This creates objects in the planning scene that mimic the ground
-    # If these were not in place gripper could hit the ground
-    #planning_scene = PlanningSceneInterface("base_link")
-    #planning_scene.removeCollisionObject("my_front_ground")
-    #planning_scene.removeCollisionObject("my_back_ground")
-    #planning_scene.removeCollisionObject("my_right_ground")
-    #planning_scene.removeCollisionObject("my_left_ground")
-    #planning_scene.addCube("my_front_ground", .7, .65, 0.0, 0.3)
-    #planning_scene.addCube("my_back_ground", 1, -1.2, 0.0, -1.0)
-    #planning_scene.addCube("my_left_ground", 1, 0.0, 1.2, -1.0)
-    #planning_scene.addCube("my_right_ground", 1, 0.0, -1.2, -1.0)
-
     # This is the wrist link not the gripper itself
     gripper_frame = 'wrist_roll_link'
     # Position and rotation of a sequence of wave points
-    gripper_poses = [Pose(Point(0.55, 0.0, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.65, 0.0, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.75, 0.0, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.85, 0.0, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.85, -.2, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.75, -.2, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.65, -.2, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.55, -.2, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.55, -.4, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.65, -.4, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.75, -.4, 0.78),Quaternion(0.000, 0.0, 0, 1)),
-                     Pose(Point(0.85, -.4, 0.78),Quaternion(0.000, 0.0, 0, 1)),]
+    gripper_poses = [Pose(Point(0.55, 0.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.65, 0.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.75, 0.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.85, 0.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.85, 0.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.75, 0.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.65, 0.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.55, 0.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.55, 0.0, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.65, 0.0, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.75, 0.0, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.85, 0.0, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.85, -.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.75, -.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.65, -.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.55, -.2, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.55, -.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.65, -.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),
+                     Pose(Point(0.75, -.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),]
+                     Pose(Point(0.8, -.4, 0.98),Quaternion(0.000, 0.0, 0, 1)),]
 
     # Construct a "pose_stamped" message as required by moveToPose
     gripper_pose_stamped = PoseStamped()
     gripper_pose_stamped.header.frame_id = 'base_link'
     rospy.sleep(2)
 
-   
-    for i in range(0,10):  #while not rospy.is_shutdown():
+
+    for i in range(0,1):  #while not rospy.is_shutdown():
         for pose in gripper_poses:
             # Finish building the Pose_stamped message
             # If the message stamp is not current it could be ignored
