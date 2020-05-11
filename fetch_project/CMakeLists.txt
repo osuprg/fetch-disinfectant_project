@@ -3,15 +3,20 @@ project(fetch_project)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
+add_definitions(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   rospy
   std_msgs
+  roscpp
+  rviz_visual_tools
 )
+
+find_package(Eigen3 REQUIRED)
+#find_package(Boost REQUIRED thread system)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -105,7 +110,14 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fetch_project
-  CATKIN_DEPENDS roscpp rospy std_msgs
+#  LIBRARIES
+#  	${PROJECT_NAME}
+  CATKIN_DEPENDS 
+	roscpp 
+	rospy 
+	std_msgs
+	rviz_visual_tools
+
 #  DEPENDS system_lib
 )
 
@@ -113,12 +125,24 @@ catkin_package(
 ## Build ##
 ###########
 
+
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-)
+
+include_directories(SYSTEM include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+
+# Marker executable
+add_executable(marker src/marker.cpp)
+target_link_libraries(marker
+  ${catkin_LIBRARIES} 
+  )
+
+#add_executable(marker src/marker.cpp)
+#target_link_libraries(marker ${catkin_LIBRARIES})
+#add_dependencies(marker fetch_project_marker_cpp)
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
