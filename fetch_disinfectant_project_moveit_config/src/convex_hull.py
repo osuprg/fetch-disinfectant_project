@@ -11,19 +11,21 @@ from scipy.spatial import ConvexHull, Delaunay
 class Convex_hull:
     def __init__(self):
         # Initialize Subscribers
-        self.sub = rospy.Subscriber('clicked_point', PointStamped, self.makeInteractiveMarker)
+        self.clicked_point_sub = rospy.Subscriber('clicked_point', PointStamped, self.makeInteractiveMarker)
 
+        # Initialize Publishers
         self.convex_hull_pub = rospy.Publisher('convex_hull',PolygonStamped, queue_size=1)
-        # self.triangle_list = rospy.Publisher('convex_hull_triangle_list', Marker, queue_size = 10)
 
+        # Setup header for Interactive Markers and
         self.header = Header()
         self.header.frame_id = "/base_link"
         self.header.stamp = rospy.Time.now()
 
+        # Setup PolygonStamped for convex hull
         self.poly = PolygonStamped()
         self.poly.header = self.header
 
-        # create an interactive marker server on the topic namespace simple_marker
+        # create an interactive marker server on the topic namespace interactive_marker
         self.server = InteractiveMarkerServer("interactive_marker")
 
         # self.triangulation_points = []
@@ -51,10 +53,10 @@ class Convex_hull:
     def makeInteractiveMarker(self, msg):
         # s
         self.clicked_points_3D.append([msg.point.x,msg.point.y, msg.point.z])
-        # print(len(self.convex_points_2D))
+
         # create an interactive marker for our server
         int_marker = InteractiveMarker()
-        int_marker.header.frame_id = "base_link"
+        int_marker.header = self.header
         int_marker.scale = 0.2
         int_marker.name = str(self.id)
         int_marker.pose.position = msg.point
@@ -139,44 +141,3 @@ if __name__=="__main__":
 
     Convex_hull()
     rospy.spin()
-
-
-
-
-# self.triangulation_polygon()
-
-#hit the plane to plan a path to do a trajectory fo the end effecot then execute that.
-#do it on the robot.
-#how to evaluate it.
-
-# def triangulation_polygon(self):
-#     poly = self.poly.polygon.points
-#     poly_points_2D = []
-#     triangulation_points = []
-#     marker = Marker()
-#     marker.header.frame_id = "/base_link"
-#     marker.type = Marker.TRIANGLE_LIST
-#     marker.action = Marker.ADD
-#     marker.id = 1
-#     marker.scale.x = 1
-#     marker.scale.y = 1
-#     marker.scale.z = 1
-#     marker.color.a = .2
-#     marker.color.r = 1.0
-#     marker.color.g = 1.0
-#     marker.color.b = 0.0
-#     marker.pose.position.x = 0
-#     marker.pose.position.y = 0
-#     marker.pose.position.z = 0
-#     marker.pose.orientation.w = 1.0
-#
-#     for i in range(len(poly)):
-#         poly_points_2D.append([poly[i].x,poly[i].y])
-#
-#     tri = Delaunay(poly_points_2D)
-#     for j in range(len(tri.vertices)):
-#         for e in tri.vertices[j]:
-#             triangulation_points.append(Point(poly_points_2D[e][0],poly_points_2D[e][1], poly[e].z))
-#
-#     marker.points = triangulation_points
-#     self.triangle_list.publish(marker)
