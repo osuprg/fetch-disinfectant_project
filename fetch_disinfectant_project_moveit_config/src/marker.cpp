@@ -39,7 +39,7 @@ int main ( int argc, char** argv)
   ros::Duration(.30).sleep();
   visual_tools_->deleteAllMarkers();
   visual_tools_->enableBatchPublishing();
-  visual_tools_->publishCone(pose_cone,M_PI/3, rvt::CYAN, 0.3);
+  visual_tools_->publishCone(pose_cone,M_PI/2, rvt::CYAN, 0.3);
   visual_tools_->trigger();
   visual_tools_->setAlpha(.3);
   }

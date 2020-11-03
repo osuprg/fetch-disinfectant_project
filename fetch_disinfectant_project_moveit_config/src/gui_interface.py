@@ -12,7 +12,7 @@ class Interface(QMainWindow):
     def __init__(self):
         super(Interface,self).__init__()
         self.gui_input_pub = rospy.Publisher('gui_input', String, queue_size = 10)
-        self.setWindowTitle('Plane Fitting')
+        self.setWindowTitle('Fetch Disinfectant Project')
         self.setGeometry(300, 300, 250, 50)
         self.initUI()
 

@@ -101,7 +101,7 @@ class Waypoint_generator:
                     p = Pose()
                     p.position.x = XX[m][n]
                     p.position.y = YY[m][n]
-                    p.position.z = np.float64(self.solver.solve_for_z(XX[m][n], YY[m][n])+.2)
+                    p.position.z = np.float64(self.solver.solve_for_z(XX[m][n], YY[m][n])+.4)
                     list.append(Point(XX[m][n],YY[m][n],p.position.z))
                     p.orientation.w = 1.0
                     self.waypoints.poses.append(p)

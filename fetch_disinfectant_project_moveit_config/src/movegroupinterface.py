@@ -170,6 +170,6 @@ class FollowTrajectoryClient(object):
 if __name__=="__main__":
     rospy.init_node('movegroupinterface',anonymous=True)
     MoveGroupInteface()
-    path_to_goal=FollowTrajectoryClient()
-    path_to_goal.init_pose()
+    # path_to_goal=FollowTrajectoryClient()
+    # path_to_goal.init_pose()
     rospy.spin()
