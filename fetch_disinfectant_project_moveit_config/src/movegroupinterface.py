@@ -1,28 +1,17 @@
 #!/usr/bin/env python
+
 import sys
 import actionlib
 import subprocess
 import rospy
 import moveit_commander
 import moveit_msgs.msg
-# import geometry_msgs.msg
 
 from threading import Thread
 from moveit_msgs.msg import MoveItErrorCodes, PlanningScene
 from moveit_python import MoveGroupInterface, PlanningSceneInterface
-# from math import pi, sin, cos
-# from moveit_python import MoveGroupInterface, PlanningSceneInterface, PickPlaceInterface
-
 from std_msgs.msg import String, Int16
-# from moveit_commander.conversions import pose_to_list
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, PoseArray
-# from moveit_python.geometry import rotate_pose_msg_by_euler_angles
-# from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
-# from control_msgs.msg import PointHeadAction, PointHeadGoal
-# from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-# from moveit_msgs.msg import PlaceLocation, MoveItErrorCodes
-# from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-
 
 class MoveGroupInteface(object):
   """MoveGroupPythonInteface"""
@@ -37,14 +26,13 @@ class MoveGroupInteface(object):
     robot = moveit_commander.RobotCommander()
     ## Instantiate a `PlanningSceneInterface`_ object.  This object is an interface
     ## to the world surrounding the robot:
-    # scene = PlanningSceneInterface("base_link")
     ## Instantiate a `MoveGroupCommander`_ object.  This object is an interface
     ## to one group of joints.  In this case the group is the joints in the Fetch
     ## arm so we set ``group_name = panda_arm``. If you are using a different robot,
     ## you should change this value to the name of your robot arm planning group.
     ## This interface can be used to plan and execute motions on the Panda:
-    #group_name = "arm" #or arm_with_torso
     group = moveit_commander.MoveGroupCommander("arm_with_torso")
+    group.set_end_effector_link("gripper_link")
     ## We create a `DisplayTrajectory`_ publisher which is used later to publish
     ## trajectories for RViz to visualize:
     display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
@@ -55,7 +43,7 @@ class MoveGroupInteface(object):
     # We can get the name of the reference frame for this robot:
     planning_frame = group.get_planning_frame()
     # We can also print the name of the end-effector link for this group:
-    eef_link = group.get_end_effector_link()
+    # eef_link = group.get_end_effector_link()
     # We can get a list of all the groups in the robot:
     group_names = robot.get_group_names()
     # Misc variables
@@ -65,10 +53,11 @@ class MoveGroupInteface(object):
     self.group = group
     self.display_trajectory_publisher = display_trajectory_publisher
     self.planning_frame = planning_frame
-    self.eef_link = eef_link
+    self.eef_link = "gripper_link"
+    # print(eef_link)
     self.group_names = group_names
     self.plan = None
-    # self.path_to_goal=FollowTrajectoryClient()
+    self.path_to_goal=FollowTrajectoryClient()
 
 
   def callback(self,gui_input):
@@ -119,43 +108,13 @@ class MoveGroupInteface(object):
     # raw_input()
     group.execute(self.plan, wait=True)
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-class MoveItThread(Thread):
-
-    def __init__(self):
-        Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        self.process = subprocess.Popen(["roslaunch", "fetch_disinfectant_project_moveit_config", "move_group.launch", "--wait"])
-        _, _ = self.process.communicate()
-
-    def stop(self):
-        self.process.send_signal(subprocess.signal.SIGINT)
-        self.process.wait()
-
-def is_moveit_running():
-    output = subprocess.check_output(["rosnode", "info", "move_group"], stderr=subprocess.STDOUT)
-    if output.find("unknown node") >= 0:
-        return False
-    if output.find("Communication with node") >= 0:
-        return False
-    return True
-
-class FollowTrajectoryClient(Thread):
+class FollowTrajectoryClient(object):
 
     def __init__(self):
-        Thread.__init__(self)
         self.client = None
-        self.start()
 
     def tuck_pose(self):
-        move_thread = None
-        if not is_moveit_running():
-            rospy.loginfo("starting moveit")
-            move_thread = MoveItThread()
-
         rospy.loginfo("Waiting for MoveIt...")
         self.client = MoveGroupInterface("arm_with_torso", "base_link")
         rospy.loginfo("...connected")
@@ -164,7 +123,7 @@ class FollowTrajectoryClient(Thread):
         # So we are adding a box above the base of the robot
         scene = PlanningSceneInterface("base_link")
         scene.addBox("keepout", 0.2, 0.5, 0.05, 0.15, 0.0, 0.375)
-        scene.addBox("table", 0.73, 1.52, 0.80, .6, 0.0, 0.80/2)
+        # scene.addBox("table", 0.73, 1.52, 0.80, .6, 0.0, 0.80/2)
 
 
         joints = ["torso_lift_joint", "shoulder_pan_joint", "shoulder_lift_joint", "upperarm_roll_joint",
@@ -177,26 +136,11 @@ class FollowTrajectoryClient(Thread):
                                                      max_velocity_scaling_factor=0.2)
             if result and result.error_code.val == MoveItErrorCodes.SUCCESS:
                 scene.removeCollisionObject("keepout")
-                scene.removeCollisionObject("table")
+                # scene.removeCollisionObject("table")
                 rospy.loginfo("done")
-
-                # if move_thread:
-                #     move_thread.stop()
-
-                # On success quit
-                # Stopping the MoveIt thread works, however, the action client
-                # does not get shut down, and future tucks will not work.
-                # As a work-around, we die and roslaunch will respawn us.
-                # rospy.signal_shutdown("done")
-                # sys.exit(0)
                 return
 
     def init_pose(self):
-        move_thread = None
-        if not is_moveit_running():
-            rospy.loginfo("starting moveit")
-            move_thread = MoveItThread()
-
         rospy.loginfo("Waiting for MoveIt...")
         self.client = MoveGroupInterface("arm_with_torso", "base_link")
         rospy.loginfo("...connected")
@@ -205,12 +149,12 @@ class FollowTrajectoryClient(Thread):
         scene = PlanningSceneInterface("base_link")
 
         scene.addBox("keepout", 0.2, 0.5, 0.05, 0.15, 0.0, 0.375)
-        scene.addBox("table", 0.73, 1.52, 0.80, .6, 0.0, 0.80/2)
+        # scene.addBox("table", 0.73, 1.52, 0.80, .6, 0.0, 0.80/2)
 
         joints = ["torso_lift_joint", "shoulder_pan_joint", "shoulder_lift_joint", "upperarm_roll_joint",
                   "elbow_flex_joint", "forearm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
-        # pose = [.05, 1.41, 0.30, -0.22, -2.25, -1.56, 1.80, -0.37,]
-        pose = [.05, 1.50, -0.90, 3.06, -2.10, -1.57, -1.40, -0.37,]
+        pose = [.05, 1.41, 0.30, -0.22, -2.25, -1.56, 1.80, -0.37,]
+        # pose = [.05, 1.50, -0.90, 3.06, -2.10, -1.57, -1.40, -0.37,]
         while not rospy.is_shutdown():
             result = self.client.moveToJointPosition(joints,
                                                      pose,
@@ -218,35 +162,14 @@ class FollowTrajectoryClient(Thread):
                                                      max_velocity_scaling_factor=0.2)
             if result and result.error_code.val == MoveItErrorCodes.SUCCESS:
                 scene.removeCollisionObject("keepout")
-                scene.removeCollisionObject("table")
+                # scene.removeCollisionObject("table")
                 rospy.loginfo("done")
-                # if move_thread:
-                #     move_thread.stop()
-
-                # On success quit
-                # Stopping the MoveIt thread works, however, the action client
-                # does not get shut down, and future tucks will not work.
-                # As a work-around, we die and roslaunch will respawn us.
-                # rospy.signal_shutdown("done")
-                # sys.exit(0)
-
                 return
-
-
-    def stop(self):
-        if self.client:
-            self.client.get_move_action().cancel_goal()
-        # Stopping the MoveIt thread works, however, the action client
-        # does not get shut down, and future tucks will not work.
-        # As a work-around, we die and roslaunch will respawn us.
-        rospy.signal_shutdown("failed")
-        sys.exit(0)
-
 
 
 if __name__=="__main__":
     rospy.init_node('movegroupinterface',anonymous=True)
     MoveGroupInteface()
     path_to_goal=FollowTrajectoryClient()
-    path_to_goal.tuck_pose()
+    path_to_goal.init_pose()
     rospy.spin()

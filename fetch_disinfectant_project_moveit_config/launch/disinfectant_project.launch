@@ -1,13 +1,13 @@
 <launch>
 
  <!-- Run the main MoveIt executable -->
- <!-- <arg name="debug" default="false" />
+ <arg name="debug" default="false" />
  <arg name="pipeline" default="$(optenv PLANNING_PIPELINE ompl)" />
  <include file="$(find fetch_disinfectant_project_moveit_config)/launch/move_group.launch">
    <arg name="allow_active_sensing" default="true"/>
    <arg name="debug" value="$(arg debug)"/>
    <arg name="pipeline" value="$(arg pipeline)" />
- </include> -->
+ </include>
 
  <!-- Fetch Navigation -->
  <include file="$(find fetch_disinfectant_project_navigation)/launch/fetch_nav.launch" >
@@ -27,7 +27,7 @@
  <node pkg="fetch_disinfectant_project_moveit_config" type="convex_hull.py"        name="convex_hull"        output="screen"/>
  <node pkg="fetch_disinfectant_project_moveit_config" type="plane_fitting.py"      name="plane_fitting"      output="screen"/>
  <node pkg="fetch_disinfectant_project_moveit_config" type="gui_interface.py"      name="gui_interface"      output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="waypoint_generator.py" name="waypoint_generator" output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="movegroupinterface.py" name="movegroupinterface" output="screen"/>
+ <!-- <node pkg="fetch_disinfectant_project_moveit_config" type="waypoint_generator.py" name="waypoint_generator" output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="movegroupinterface.py" name="movegroupinterface" output="screen"/> -->
 
 </launch>

@@ -148,12 +148,7 @@ class Convex_hull:
         self.clicked_points_3D[id][2] = p.z
         if len(self.clicked_points_3D) > 2:
             self.convex_hull_function()
-        # elif len(self.clicked_points) > 3:
-        #     self.server.clear()
-        #     self.server.applyChanges()
-        #     self.poly.polygon.points = []
-        #     self.convex_hull_pub.publish(self.poly)
-
+        
 
 if __name__=="__main__":
     # Initialize the node
