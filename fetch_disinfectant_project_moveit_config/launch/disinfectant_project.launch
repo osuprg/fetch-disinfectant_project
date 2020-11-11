@@ -15,7 +15,7 @@
  </include>
 
  <!-- Start Cone Marker -->
- <include file="$(find fetch_disinfectant_project_moveit_config)/launch/marker.launch" />
+ <include file="$(find fetch_disinfectant_project_moveit_config)/launch/cone_marker.launch" />
 
  <!-- Start Ocotomap Mapping  -->
  <include file="$(find octomap_server)/launch/octomap_mapping.launch" />
