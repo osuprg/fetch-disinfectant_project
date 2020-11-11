@@ -7,17 +7,15 @@ import numpy as np
 
 from visualization_msgs.msg import *
 from geometry_msgs.msg import *
-from interactive_markers.interactive_marker_server import Header
-from scipy.optimize import leastsq
-from scipy.spatial import ConvexHull, Delaunay
+from std_msgs.msg import Header
+from scipy.spatial import Delaunay
 from sympy import solve, Poly, Eq, Function, exp, Symbol
-from planar import BoundingBox
 
 class Plane_fitting:
     def __init__(self):
 
         # Initialize Subscribers
-        self.convex_hull_sub = rospy.Subscriber('convex_hull', PolygonStamped, self.polygon_callback, queue_size=1 )
+        self.convex_hull_sub = rospy.Subscriber('convex_hull', PolygonStamped, self.best_fit_equation_callback, queue_size=1 )
 
         # Intialize Publishers
         self.best_fit_plane_pub = rospy.Publisher('best_fit_plane',PolygonStamped, queue_size=10)
@@ -32,10 +30,9 @@ class Plane_fitting:
         self.poly = PolygonStamped()
         self.poly.header = self.header
 
-        # Create triangle_list maker to fill PolygonStamped
+        # Create triangle_list marker
         self.plane_marker = Marker()
         self.plane_marker.header = self.header
-
         self.plane_marker.type = Marker.TRIANGLE_LIST
         self.plane_marker.action = Marker.ADD
         self.plane_marker.id = 0
@@ -46,19 +43,13 @@ class Plane_fitting:
         self.plane_marker.color.r = 1.0
         self.plane_marker.color.g = 0
         self.plane_marker.color.b = 0
-        # self.plane_marker.pose.position.x = 0
-        # self.plane_marker.pose.position.y = 0
-        # self.plane_marker.pose.position.z = 0
-        # self.plane_marker.pose.orientation.w = 1.0
 
+        # Set a, b and d values to none. Equation: ax+by+cz=d
         self.a = None
         self.b = None
         self.d = None
 
-    def polygon_callback(self,msg):
-        self.best_fit_equation(msg)
-
-    def best_fit_equation(self,msg):
+    def best_fit_equation_callback(self,msg):
         X = []
         Y = []
         Z = []
@@ -66,8 +57,11 @@ class Plane_fitting:
             X.append(msg.polygon.points[i].x)
             Y.append(msg.polygon.points[i].y)
             Z.append(msg.polygon.points[i].z)
+
         # coordinates (XYZ) of the interactive_markers
         XYZ = np.array([X,Y,Z])
+
+        # Begin plane fit computation
         tmp_A = []
         tmp_b = []
         for i in range(len(X)):
@@ -77,24 +71,27 @@ class Plane_fitting:
         A = np.matrix(tmp_A)
         fit = (A.T * A).I * A.T * b
         errors = b - A * fit
-        residual = np.linalg.norm(errors)
-        # print "solution:"
-        # print "%f x + %f y + %f = z" % (fit[0], fit[1], fit[2])
-        # print "errors:"
-        # print errors
-        # print "residual:"
-        # print residual
+
+        # assign a,b, and d values to the fit output.
         self.a = float(fit[0])
         self.b = float(fit[1])
         self.d = float(fit[2])
         fitted_plane = []
+
+
         for i in range(len(X)):
                 z_value = self.solve_for_z(X[i],Y[i])
                 fitted_plane.append(Point32(X[i],Y[i],z_value))
         self.poly.polygon.points = fitted_plane
         self.best_fit_plane_pub.publish(self.poly)
         self.triangulation_polygon()
-
+        # residual = np.linalg.norm(errors)
+        # print "solution:"
+        # print "%f x + %f y + %f = z" % (fit[0], fit[1], fit[2])
+        # print "errors:"
+        # print errors
+        # print "residual:"
+        # print residual
 
     def solve_for_z(self,x_value,y_value):
         z = Symbol('z')
