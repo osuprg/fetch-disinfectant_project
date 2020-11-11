@@ -1,37 +1,55 @@
 #!/usr/bin/env python3
 
+#import what we need
 import rospy
 import sys
 import numpy as np
+
 from visualization_msgs.msg import *
 from geometry_msgs.msg import *
 from interactive_markers.interactive_marker_server import Header
 from scipy.optimize import leastsq
-from sympy import solve, Poly, Eq, Function, exp, Symbol
 from scipy.spatial import ConvexHull, Delaunay
-# import shapely.geometry as geometry
+from sympy import solve, Poly, Eq, Function, exp, Symbol
 from planar import BoundingBox
 
 class Plane_fitting:
     def __init__(self):
+
+        # Initialize Subscribers
         self.convex_hull_sub = rospy.Subscriber('convex_hull', PolygonStamped, self.polygon_callback, queue_size=1 )
+
+        # Intialize Publishers
         self.best_fit_plane_pub = rospy.Publisher('best_fit_plane',PolygonStamped, queue_size=10)
         self.best_fit_plane_triangle_list_pub = rospy.Publisher('best_fit_plane_triangle_list', Marker, queue_size = 10)
-        # self.bounding_box = rospy.Publisher('bouding_box', Marker, queue_size = 10)
-        #Initialize the "get_points" node, parameters, Subscriber, and publisher
 
+        # Intialize headers for Marker and PolygonStamped
         self.header = Header()
         self.header.frame_id = "/base_link"
         self.header.stamp = rospy.Time.now()
 
+        # Create a PolygonStamped named poly
         self.poly = PolygonStamped()
         self.poly.header = self.header
 
-        self.bbox = Marker()
-        self.bbox.header = self.header
-
+        # Create triangle_list maker to fill PolygonStamped
         self.plane_marker = Marker()
         self.plane_marker.header = self.header
+
+        self.plane_marker.type = Marker.TRIANGLE_LIST
+        self.plane_marker.action = Marker.ADD
+        self.plane_marker.id = 0
+        self.plane_marker.scale.x = 1
+        self.plane_marker.scale.y = 1
+        self.plane_marker.scale.z = 1
+        self.plane_marker.color.a = .8
+        self.plane_marker.color.r = 1.0
+        self.plane_marker.color.g = 0
+        self.plane_marker.color.b = 0
+        # self.plane_marker.pose.position.x = 0
+        # self.plane_marker.pose.position.y = 0
+        # self.plane_marker.pose.position.z = 0
+        # self.plane_marker.pose.orientation.w = 1.0
 
         self.a = None
         self.b = None
@@ -88,20 +106,7 @@ class Plane_fitting:
         marker = self.plane_marker
         poly_points_2D = []
         triangulation_points = []
-        marker.type = Marker.TRIANGLE_LIST
-        marker.action = Marker.ADD
-        marker.id = 1
-        marker.scale.x = 1
-        marker.scale.y = 1
-        marker.scale.z = 1
-        marker.color.a = .8
-        marker.color.r = 1.0
-        marker.color.g = 0
-        marker.color.b = 0
-        marker.pose.position.x = 0
-        marker.pose.position.y = 0
-        marker.pose.position.z = 0
-        marker.pose.orientation.w = 1.0
+
         for i in range(len(poly)):
             poly_points_2D.append([poly[i].x,poly[i].y])
 

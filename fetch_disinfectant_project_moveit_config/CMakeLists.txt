@@ -134,7 +134,7 @@ catkin_package(
 include_directories(SYSTEM include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 # Marker executable
-add_executable(marker src/marker.cpp)
+add_executable(marker src/cone_marker.cpp)
 target_link_libraries(marker
   ${catkin_LIBRARIES} 
   )
