@@ -22,17 +22,32 @@ class Convex_hull:
 
         # Initialize Publishers
         self.convex_hull_pub = rospy.Publisher('convex_hull',PolygonStamped, queue_size=1)
+        self.plane_pub = rospy.Publisher('best_fit_plane', Marker, queue_size = 1)
 
         # Setup header
         self.header = Header()
         self.header.frame_id = "/base_link"
         self.header.stamp = rospy.Time.now()
 
-        # Setup PolygonStamped for convex hull
-        self.poly = PolygonStamped()
-        self.poly.header = self.header
+        # Setup PolygonStamped for convex hull of Interactive Markers (IM's)
+        self.convex_hull_polygon = PolygonStamped()
+        self.convex_hull_polygon.header = self.header
 
-        # Intialize X,Y, and Z lists for the Interactive Marker (IM) positions
+        # Create triangle_list marker to fill in best fit plane
+        self.plane_marker = Marker()
+        self.plane_marker.header = self.header
+        self.plane_marker.type = Marker.TRIANGLE_LIST
+        self.plane_marker.action = Marker.ADD
+        self.plane_marker.id = 0
+        self.plane_marker.scale.x = 1
+        self.plane_marker.scale.y = 1
+        self.plane_marker.scale.z = 1
+        self.plane_marker.color.a = .8
+        self.plane_marker.color.r = 1.0
+        self.plane_marker.color.g = 0
+        self.plane_marker.color.b = 0
+
+        # Intialize X,Y, and Z lists for the IM positions
         self.X = []
         self.Y = []
         self.Z = []
@@ -54,11 +69,11 @@ class Convex_hull:
         self.M = None
         self.M_inv = None
 
-        # convex hull points ( In 2D coordinates: [X, Y, 0, 1] )
-        self.hull_vertices = None
-
         # Initialize the 2D sub-plane coodinates.
         self.coordinates_2D = None
+
+        # Initialize the verticies of the convex hull of the IM's
+        self.convex_hull_verticies = None
 
 
     def best_fit_plane_callback(self,arr_msg):
@@ -67,9 +82,6 @@ class Convex_hull:
             pass
 
         else:
-            self.X = []
-            self.Y = []
-            self.Z = []
             # Sepearately store the components (XYZ) of the IM's
             for i in range(len(arr_msg.data)/3):
                 self.X.append(arr_msg.data[i*3 + 0])
@@ -114,6 +126,9 @@ class Convex_hull:
         u_c = self.c / mag
         self.u_n = np.array([u_a, u_b, u_c])
 
+        self.proj_x = []
+        self.proj_y = []
+        self.proj_z = []
         # forloop to compute the projections of each IM
         for i in range(len(self.X)):
             # Make a vector from the origin points to the IM's location.
@@ -216,11 +231,39 @@ class Convex_hull:
     def convex_hull(self):
         # Run convex hull function on 2D sub-plane coordinates.
         hull = ConvexHull(self.coordinates_2D)
-        self.hull_vertices = hull.vertices
+
+        poly_points = []
+
+        for e in hull.vertices:
+            poly_points.append(Point32(self.X[e],self.Y[e],self.Z[e]))
+
+        # Assign convex_points to the PolygonStamped
+        self.convex_hull_polygon.polygon.points = poly_points
+
+        # Publish the PolygonStamped
+        self.convex_hull_pub.publish(self.convex_hull_polygon)
+
+        self.triangulation_polygon()
+
+    def triangulation_polygon(self):
+        triangulation_points = []
 
 
+        triangulation = Delaunay(self.coordinates_2D) #change this because self.coordinates does not get updated. When it should though. hmmm weird.
+        # print(len(triangulation.vertices))
 
+        for j in range(len(triangulation.vertices)):
+            for e in triangulation.vertices[j]:
+                triangulation_points.append(Point32(self.proj_x[e], self.proj_y[e], self.proj_z[e]))
 
+        self.plane_marker.points = triangulation_points
+        self.plane_pub.publish(self.plane_marker)
+
+        self.clear_parameters()
+
+    def clear_parameters(self):
+        del self.X[:],self.Y[:],self.Z[:]
+        del self.proj_x[:],self.proj_y[:],self.proj_z[:]
 
 
 
@@ -229,38 +272,3 @@ if __name__=="__main__":
     rospy.init_node('convex_hull')
     Convex_hull()
     rospy.spin()
-
-# Set the shape of the convex_hull_points
-# self.convex_hull_points = np.empty(shape=[len(hull.vertices),4])
-
-# for e, i in zip(hull.vertices, range(len(hull.vertices))):
-#     # Store the convex hull coordinates (in the [X,Y,0,1] configuration)
-#     self.convex_hull_points[i] = [self.coordinates_2D[e][0],
-#                                   self.coordinates_2D[e][1],
-#                                   0.0,
-#                                   1.0]
-
-#     self.dimension_addition()
-#
-#
-# def dimension_addition(self):
-#     # Set the shape of the convex_hull_points
-#     self.coordinates_3D = np.empty(shape=[len(self.convex_hull_points),3])
-#
-#     for i,e in zip(range(len(self.convex_hull_points)), self.convex_hull_points):
-#         addition = np.matmul(self.M_inv,e)
-#
-#         self.coordinates_3D[i] = [addition[0],
-#                                   addition[1],
-#                                   addition[2]]
-#     print(self.coordinates_3D)
-
-
-
-# s = np.array([[1,2,1,1], [1,1,1,2], [1,1,2,1], [1,1,1,1]])
-# ss = np.linalg.inv(s)
-# d = np.array([[0,1,0,0],[0,0,1,0], [0,0,0,1], [1,1,1,1]])
-# m = np.matmul(d,ss)
-# A = np.array([1,1,1,1])
-# aa = np.matmul(m,A)
-# np.matmul(m_inv,aa)

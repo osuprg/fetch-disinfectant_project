@@ -1,6 +1,6 @@
-convex_hull_old.py
-end_effector_position_publisher.py
-just_in_case.py
-lawn_mower_path_cartesian_movement.py
-move_fetch.py
-plane_fittings.py
+/fetch_disinfectant_project_moveit_config/src/convex_hull_old.py
+/fetch_disinfectant_project_moveit_config/src/end_effector_position_publisher.py
+/fetch_disinfectant_project_moveit_config/src/just_in_case.py
+/fetch_disinfectant_project_moveit_config/src/lawn_mower_path_cartesian_movement.py
+/fetch_disinfectant_project_moveit_config/src/move_fetch.py
+/fetch_disinfectant_project_moveit_config/src/plane_fittings.py
