@@ -77,7 +77,7 @@ class Convex_hull:
 
 
     def best_fit_plane_callback(self,arr_msg):
-        # condition to 
+        # Conditional statement to process arr_msg
         if len(arr_msg.data) < 9:
             pass
 
@@ -148,16 +148,19 @@ class Convex_hull:
             self.proj_y.append(self.Y[i] - dist*self.u_n[1])
             self.proj_z.append(self.Z[i] - dist*self.u_n[2])
 
+        # Begin the transfer_matrix function
         self.transfer_matrix()
 
 
     def solve_for_z(self,x_value,y_value):
         z = Symbol('z')
+        # Use solve function to solve the z value
         z_value = solve(self.a*x_value + self.b*y_value + self.c*z - 1, z)
         return float(z_value[0])
 
 
     def transfer_matrix(self):
+        # Reference for transfer matrix approach: https://stackoverflow.com/questions/49769459
         # Create a vector in the bestfit plane using the first two projected points
         ABx = self.proj_x[0] - self.proj_x[1]
         ABy = self.proj_y[0] - self.proj_y[1]
@@ -212,26 +215,29 @@ class Convex_hull:
         # Inverse of Tranform Matrix
         self.M_inv = np.linalg.inv(self.M)
 
+        # Begin dimension reduction function.
         self.dimension_reduction()
 
 
     def dimension_reduction(self):
-        # Set coordinates_2D to an empty array.
+        # Set coordinates_2D to equal an empty array.
         self.coordinates_2D = np.empty(shape=[len(self.X),2])
 
+        # for loop to compute the dimension reduction of the IM's projections
         for i in range(len(self.X)):
             IM_projection = np.array([self.X[i], self.Y[i], self.Z[i], 1])
             reduction = np.matmul(self.M,IM_projection)
 
             # Store the 2D sub-plane coordinates
             self.coordinates_2D[i] = [reduction[0], reduction[1]]
+
+        # Begin Convex_hull on self.coordinates_2D
         self.convex_hull()
 
 
     def convex_hull(self):
         # Run convex hull function on 2D sub-plane coordinates.
         hull = ConvexHull(self.coordinates_2D)
-
         poly_points = []
 
         for e in hull.vertices:
@@ -243,25 +249,29 @@ class Convex_hull:
         # Publish the PolygonStamped
         self.convex_hull_pub.publish(self.convex_hull_polygon)
 
+        # Begin triangulation of the polygon
         self.triangulation_polygon()
 
+
     def triangulation_polygon(self):
+        # Run Delaunay function on the self.coodinates to get all the vertices
+        # of the trianglies in the the polygon.
         triangulation_points = []
-
-
-        triangulation = Delaunay(self.coordinates_2D) #change this because self.coordinates does not get updated. When it should though. hmmm weird.
-        # print(len(triangulation.vertices))
+        triangulation = Delaunay(self.coordinates_2D)
 
         for j in range(len(triangulation.vertices)):
             for e in triangulation.vertices[j]:
                 triangulation_points.append(Point32(self.proj_x[e], self.proj_y[e], self.proj_z[e]))
 
+        # Assign triangulation_points to plane_marker.points and publish
         self.plane_marker.points = triangulation_points
         self.plane_pub.publish(self.plane_marker)
 
+        # Begin clear_parameters function
         self.clear_parameters()
 
     def clear_parameters(self):
+        # wipe the previous data from lists
         del self.X[:],self.Y[:],self.Z[:]
         del self.proj_x[:],self.proj_y[:],self.proj_z[:]
 
