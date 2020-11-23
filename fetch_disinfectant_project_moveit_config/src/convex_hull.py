@@ -77,7 +77,7 @@ class Convex_hull:
 
 
     def best_fit_plane_callback(self,arr_msg):
-
+        # condition to 
         if len(arr_msg.data) < 9:
             pass
 

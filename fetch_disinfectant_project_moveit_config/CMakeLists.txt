@@ -55,10 +55,10 @@ find_package(Eigen3 REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   List.msg
- )
+# add_message_files(
+#   FILES
+#   List.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(

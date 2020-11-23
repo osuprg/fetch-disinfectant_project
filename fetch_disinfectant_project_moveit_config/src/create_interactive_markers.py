@@ -36,12 +36,14 @@ class Create_Interactive_Markers:
 
     # processFeedback gets called when an IM's position is changed
     def processFeedback(self,feedback):
-        # update the IM pose list and publish
+        # Update the array of IM postions from processFeedback
         p = feedback.pose.position
         index = int(feedback.marker_name)
         self.arr_msg[index*3 + 0] = p.x
         self.arr_msg[index*3 + 1] = p.y
         self.arr_msg[index*3 + 2] = p.z
+
+        # Publish updated array messages.
         self.IM_array_pub.publish(self.arr_msg)
 
 
@@ -50,6 +52,7 @@ class Create_Interactive_Markers:
         if self.id == 0:
             self.arr_msg = np.array([msg.point.x, msg.point.y, msg.point.z],dtype=np.float32)
         else:
+            # append new clicked points to the array, arr_msg.
             append_arr = np.array([msg.point.x, msg.point.y, msg.point.z], dtype=np.float32)
             self.arr_msg = np.append(self.arr_msg, append_arr)
 
