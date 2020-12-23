@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+# Import what we need
 import rospy
-import sys
+import random
 import numpy as np
-from visualization_msgs.msg import *
-from std_msgs.msg import String
-from geometry_msgs.msg import PolygonStamped, Pose, PoseArray, Quaternion,Point
-from shapely.geometry import Point as Point_2D
-from shapely.geometry.polygon import Polygon
-from interactive_markers.interactive_marker_server import Header
-from planar import BoundingBox
-from plane_fitting import Plane_fitting
-from movegroupinterface import MoveGroupInteface, FollowTrajectoryClient
+
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Pose,PoseArray,Quaternion,Point
+from std_msgs.msg import Header
+from rospy.numpy_msg import numpy_msg
+from rospy_tutorials.msg import Floats
+from grid_based_sweep_coverage_path_planner import planning_animation,planning
 
 class Waypoint_generator:
     def __init__(self):
@@ -54,7 +54,7 @@ class Waypoint_generator:
         bbox_marker.id = 1
         bbox_marker.scale.x = .03
         bbox_marker.scale.y = .03
-        bbox_marker.scale.y = .03
+        bbox_marker.scale.z = .03
         bbox_marker.color.a = 1
         bbox_marker.color.r = 1
         bbox_marker.color.g = 1
@@ -130,55 +130,3 @@ class Waypoint_generator:
 if __name__=="__main__":
     Waypoint_generator()
     rospy.spin()
-
-
-
-
-# flag = 0
-# X = x_lim_min
-# Y = y_lim_max
-# incr = .1
-# list = []
-# for i in range(int(num_y)):
-#     if flag == 0:
-#         while True:
-#             if poly_points.contains(Point_2D(X,Y)) == True:
-#                 p = Pose()
-#                 p.position.x = X
-#                 p.position.y = Y
-#                 p.position.z = np.float64(self.solver.solve_for_z(X, Y) + .2)
-#                 p.orientation.w = 1.0
-#                 list.append(Point(X, Y,p.position.z))
-#                 self.waypoints.poses.append(p)
-#             else:
-#                 flag = 1
-#                 Y -= incr
-#                 break
-#             X += incr
-#
-#     elif flag == 1:
-#         while True:
-#             print(Y)
-#             if poly_points.contains(Point_2D(X,Y)) == True:
-#                 p = Pose()
-#                 p.position.x = X
-#                 p.position.y = Y
-#                 p.position.z = np.float64(self.solver.solve_for_z(X, Y) + .2)
-#                 p.orientation.w = 1.0
-#                 list.append(Point(X,Y,p.position.z))
-#                 self.waypoints.poses.append(p)
-#             else:
-#                 flag = 0
-#                 Y -= incr
-#                 break
-#             X -= incr
-#
-# print(i, num_y)
-
-
-
-
-
-
-
-# print(self.waypoints.poses)
