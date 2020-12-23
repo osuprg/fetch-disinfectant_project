@@ -137,7 +137,7 @@ class Convex_hull:
             else:
                 self.offset = False
                 self.projection_on_plane()
-                
+
     def projection_on_plane(self):
         # Create an origin point by using x and y pose of the first IM and solve for z.
         orig_x = self.X[0]
@@ -265,24 +265,35 @@ class Convex_hull:
         # Run convex hull function on 2D sub-plane coordinates.
         hull = ConvexHull(self.coordinates_2D)
 
+        hull_coord_2D = []
         for e in hull.vertices:
             self.plane_polygon.polygon.points.append(Point32(self.proj_x[e],self.proj_y[e],self.proj_z[e]))
             self.IM_polygon.polygon.points.append(Point32(self.X[e],self.Y[e],self.Z[e]))
+            hull_coord_2D.append(self.coordinates_2D[e])
 
-        # Assign IM_points to convex_hull_polygon and publish it.
-        self.IM_poly_pub.publish(self.IM_polygon)
 
-        # Assign plane_points to plane_polygon and publish it.
-        self.plane_poly_pub.publish(self.plane_polygon)
+        if self.offset == True:
+            # update the coordinates_2D to only consider convex hull coords.
+            self.coordinates_2D = np.array(hull_coord_2D)
 
-        # Begin triangulation of the polygon
-        self.triangulation_polygon()
+            # Begin array_publisher function
+            self.array_publisher()
 
-        # Begin clear_parameters function
-        self.clear_lists()
+            # Begin clear_parameters function
+            self.clear_lists()
 
-        # Begin array_publisher function
-        self.array_publisher()
+        else:
+            # Begin triangulation of the polygon
+            self.triangulation_polygon()
+
+            # Publish IM_polygon.
+            self.IM_poly_pub.publish(self.IM_polygon)
+
+            # Publish Plane_polygon.
+            self.plane_poly_pub.publish(self.plane_polygon)
+
+            # Begin clear_parameters function
+            self.clear_lists()
 
 
     def triangulation_polygon(self):
