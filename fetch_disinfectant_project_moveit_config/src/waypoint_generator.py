@@ -20,7 +20,6 @@ class Waypoint_generator:
         # Initialize Publishers
         self.waypoints_pub        = rospy.Publisher('waypoints'       , PoseArray        , queue_size=1)
         self.waypoints_marker_pub = rospy.Publisher('waypoints_marker', Marker           , queue_size=1)
-        self.missed_data          = rospy.Publisher('missed_data', numpy_msg(Floats), queue_size=1)
 
         # Setup header
         self.header = Header()
@@ -101,13 +100,11 @@ class Waypoint_generator:
         # Create lists and array of waypoints to publish
         poses = []
         marker_list = []
-        pose_arr = np.empty(shape=[len(px),2])
 
         # Begin dimension increase for 2D coordinates (px, py)
         for i in range(len(px)):
             arr_2D = np.array([px[i], py[i], 0, 1])
             dim_incr = np.matmul(self.M_inv, arr_2D)
-            pose_arr[i] = [px[i], py[i]]
 
             # poses append to poses (Pose Array)
             p = Pose()
@@ -132,20 +129,6 @@ class Waypoint_generator:
         # Publish markers for waypoints
         self.waypoints_marker.points = marker_list
         self.waypoints_marker_pub.publish(self.waypoints_marker)
-
-        # Create an array for three missed points
-        missed_points = np.empty(shape=[4,2])
-
-        # For loop to randomly select points for the missed points array
-        for i in range(4):
-            e = random.randint(0,len(pose_arr)-1)
-            missed_points[i] = pose_arr[e]
-
-
-        # Publish the inverse matrix and missed points for optimization node
-        a = np.array(self.M_inv.ravel(), dtype=np.float32)
-        b = np.array(missed_points.ravel(), dtype=np.float32)
-        self.missed_data.publish(np.concatenate((a,b)))
 
 
 if __name__=="__main__":
