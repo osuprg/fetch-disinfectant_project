@@ -123,9 +123,21 @@ class Convex_hull:
             #print("%f x + %f y + %f = z" % (fit[0], fit[1], fit[2]))
             #print("Normal vector: < {0}, {1}, {2}> ".format(self.a,self.b,self.c))
 
-            self.projection_on_plane()
+            self.plane_offset()
+            self.plane_offset(offset=True)
 
-
+        def plane_offset(self,offset=False):
+            if offset == True:
+                self.offset = True
+                new_height = 1+self.offset_val
+                self.a = self.a/new_height
+                self.b = self.b/new_height
+                self.c = self.c/new_height
+                self.projection_on_plane()
+            else:
+                self.offset = False
+                self.projection_on_plane()
+                
     def projection_on_plane(self):
         # Create an origin point by using x and y pose of the first IM and solve for z.
         orig_x = self.X[0]
