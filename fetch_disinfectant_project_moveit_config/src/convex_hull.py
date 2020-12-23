@@ -24,8 +24,7 @@ class Convex_hull:
         self.IM_poly_pub      = rospy.Publisher('IM_poly'               ,PolygonStamped    ,queue_size=1)
         self.plane_poly_pub   = rospy.Publisher('best_fit_plane_poly'   ,PolygonStamped    ,queue_size=1)
         self.plane_marker_pub = rospy.Publisher('best_fit_plane_marker' ,Marker            ,queue_size=1)
-        self.M_inv_array_pub  = rospy.Publisher('M_inv_array'           ,numpy_msg(Floats) ,queue_size=1)
-        self.coord_array_pub  = rospy.Publisher('coord_array'           ,numpy_msg(Floats) ,queue_size=1)
+        self.data_array_pub   = rospy.Publisher('data_array'            ,numpy_msg(Floats) ,queue_size=1)
 
         # Setup header
         self.header = Header()
@@ -83,6 +82,8 @@ class Convex_hull:
         # Initialize the verticies of the convex hull of the IM's
         self.convex_hull_verticies = None
 
+        # Initialize height offset value
+        self.offset_val = 0.3
 
     def best_fit_plane_callback(self,arr_msg):
         # Conditional statement to process arr_msg
@@ -90,6 +91,10 @@ class Convex_hull:
             pass
 
         else:
+            self.X = []
+            self.Y = []
+            self.Z = []
+
             # Sepearately store the components (XYZ) of the IM's
             for i in range(int(len(arr_msg.data)/3)):
                 self.X.append(arr_msg.data[i*3 + 0])
