@@ -3,4 +3,7 @@
 /fetch_disinfectant_project_moveit_config/src/just_in_case.py
 /fetch_disinfectant_project_moveit_config/src/lawn_mower_path_cartesian_movement.py
 /fetch_disinfectant_project_moveit_config/src/move_fetch.py
-/fetch_disinfectant_project_moveit_config/src/plane_fittings.py
+/fetch_disinfectant_project_moveit_config/src/plane_fitting.py
+/fetch_disinfectant_project_moveit_config/src/plane_fittings.pyc
+/fetch_disinfectant_project_moveit_config/src/movegroupinterface.py
+/fetch_disinfectant_project_moveit_config/src/movegroupinterface.pyc
