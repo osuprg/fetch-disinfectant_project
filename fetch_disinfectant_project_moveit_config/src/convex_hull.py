@@ -306,23 +306,23 @@ class Convex_hull:
             for e in triangulation.vertices[j]:
                 triangulation_points.append(Point32(self.proj_x[e], self.proj_y[e], self.proj_z[e]))
 
-        # Assign triangulation_points to plane_marker.points and publish
+        # Assign triangulation_points to plane_marker.points and publish marker
         self.plane_marker.points = triangulation_points
         self.plane_marker_pub.publish(self.plane_marker)
 
 
     def clear_lists(self):
         # wipe the previous data from lists
-        del self.X[:],self.Y[:],self.Z[:]
-        del self.proj_x[:],self.proj_y[:],self.proj_z[:]
         del self.plane_polygon.polygon.points[:]
         del self.IM_polygon.polygon.points[:]
 
 
     def array_publisher(self):
-
-        self.M_inv_array_pub.publish(self.M_inv.ravel())
-        self.coord_array_pub.publish(self.coordinates_2D.ravel())
+    # Publish the coordinates of the 2D subplane and Inverse Matrix in a
+    # single numpy array msg.
+    a = np.array(self.M_inv.ravel(), dtype=np.float32)
+    b = np.array(self.coordinates_2D.ravel(), dtype=np.float32)
+    self.data_array_pub.publish(np.concatenate((a,b)))
 
 
 
