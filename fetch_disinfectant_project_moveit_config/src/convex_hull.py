@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Import what we need
 import rospy
@@ -54,6 +54,7 @@ class Convex_hull:
         self.plane_marker.color.b = 0
         # self.plane_marker.pose.orientation.w = -1.0
 
+
         # Intialize X,Y, and Z lists for the IM positions
         self.X = []
         self.Y = []
@@ -84,6 +85,9 @@ class Convex_hull:
 
         # Initialize height offset value
         self.offset_val = 0.3
+
+        #
+        self.offset = None
 
     def best_fit_plane_callback(self,arr_msg):
         # Conditional statement to process arr_msg
@@ -120,23 +124,25 @@ class Convex_hull:
             self.a = float(-fit[0]/fit[2])
             self.b = float(-fit[1]/fit[2])
             self.c = float(1/fit[2])
+
             #print("%f x + %f y + %f = z" % (fit[0], fit[1], fit[2]))
             #print("Normal vector: < {0}, {1}, {2}> ".format(self.a,self.b,self.c))
 
             self.plane_offset()
             self.plane_offset(offset=True)
 
-        def plane_offset(self,offset=False):
-            if offset == True:
-                self.offset = True
-                new_height = 1+self.offset_val
-                self.a = self.a/new_height
-                self.b = self.b/new_height
-                self.c = self.c/new_height
-                self.projection_on_plane()
-            else:
-                self.offset = False
-                self.projection_on_plane()
+    def plane_offset(self,offset=False):
+        if offset == True:
+            self.offset = True
+            new_height = 1+self.offset_val
+            self.a = self.a/new_height
+            self.b = self.b/new_height
+            self.c = self.c/new_height
+            self.projection_on_plane()
+        else:
+            self.offset = False
+            self.projection_on_plane()
+
 
     def projection_on_plane(self):
         # Create an origin point by using x and y pose of the first IM and solve for z.
@@ -318,11 +324,11 @@ class Convex_hull:
 
 
     def array_publisher(self):
-    # Publish the coordinates of the 2D subplane and Inverse Matrix in a
-    # single numpy array msg.
-    a = np.array(self.M_inv.ravel(), dtype=np.float32)
-    b = np.array(self.coordinates_2D.ravel(), dtype=np.float32)
-    self.data_array_pub.publish(np.concatenate((a,b)))
+        # Publish the coordinates of the 2D subplane and Inverse Matrix in a
+        # single numpy array msg.
+        a = np.array(self.M_inv.ravel(), dtype=np.float32)
+        b = np.array(self.coordinates_2D.ravel(), dtype=np.float32)
+        self.data_array_pub.publish(np.concatenate((a,b)))
 
 
 
