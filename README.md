@@ -36,8 +36,5 @@ source devel/setup.bash
 Run launch files to get things started.
 
 ```
-roslaunch fetch_project_moveit_config fetch_world.launch or roslaunch fetch_project_moveit_config fetch_world_collision.launch
-roslaunch fetch_project_moveit_config disinfectant_project.launch
-roslaunch fetch_project_moveit_config run_nodes.launch
-rosrun teleop_twist_keyboard teleop_twist_keyboard.py
+
 ```
