@@ -2,8 +2,10 @@
 
 
 import sys
+import math
 from PyQt5.QtWidgets import (QWidget, QPushButton,QHBoxLayout, QVBoxLayout, QApplication,  QSlider, QLabel)
 from PyQt5.QtCore import Qt
+
 
 class SliderDisplay(QWidget):
 
@@ -13,31 +15,32 @@ class SliderDisplay(QWidget):
         self.min   = min
         self.max   = max
         self.ticks = ticks
-
-
+        self.val = 1.0/self.ticks
 
 
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setMinimum(self.min)
         self.slider.setMaximum(self.ticks)
-        # self.b1 = QPushButton('Quit')
         self.label = QLabel(self.name + ' {}'.format(1.0/self.ticks))
         hbox = QHBoxLayout()
         hbox.addWidget(self.label)
         hbox.addWidget(self.slider)
         vbox = QVBoxLayout()
         vbox.addLayout(hbox)
-        # vbox.addWidget(self.b1)
+
         self.setLayout(vbox)
-        # self.b1.clicked.connect(app.exit)
         self.slider.valueChanged.connect(self.v_change)
         self.setGeometry(300, 300, 250, 150)
         self.show()
 
     def v_change(self):
-        my_value = float(self.slider.value())/self.ticks*self.max
+        self.val = float(self.slider.value())/self.ticks*self.max
+        sig = str(int(math.log10(self.ticks)))
+        string = '{0}: {1:.' + sig +'f}'
+        self.label.setText(string.format(self.name,self.val))
 
-        self.label.setText('{0}: {1:.3f}'.format(self.name, my_value))
+    def value(self):
+        return self.val
         #' ' + str(my_value))
 
 def main_f(name, min, max, ticks):
