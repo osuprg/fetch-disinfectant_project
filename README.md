@@ -36,9 +36,9 @@ source devel/setup.bash
 Run launch files to get things started.
 
 ```
-roslaunch fetch_project_moveit_config fetch_world.launch
-roslaunch fetch_project_moveit_config disinfectant_project.launch
-roslaunch fetch_project_moveit_config run_nodes.launch
+roslaunch fetch_disinfectant_project_moveit_config fetch_world.launch
+roslaunch fetch_disinfectant_moveit_config disinfectant_project.launch
+roslaunch fetch_disinfectant_moveit_config run_nodes.launch
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 ```
 Click on the publish point feature and then click on one of the cubes in the octomap. This should populate an interactive marker at the location of the cube.
