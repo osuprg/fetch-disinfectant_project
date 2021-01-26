@@ -8,5 +8,8 @@
 /fetch_disinfectant_project_moveit_config/src/movegroupinterface.py
 /fetch_disinfectant_project_moveit_config/src/movegroupinterface.pyc
 /fetch_disinfectant_project_moveit_config/src/gui2.py
-/fetch_disinfectant_project_moveit_config/src/slider.py
 /fetch_disinfectant_project_moveit_config/src/micro_keypad.py
+/fetch_disinfectant_project_moveit_config/src/*.pyc
+/fetch_disinfectant_project_moveit_config/src/msd.py
+/fetch_disinfectant_project_moveit_config/src/smd-gui.py
+/fetch_disinfectant_project_moveit_config/src/inputdialog.py
