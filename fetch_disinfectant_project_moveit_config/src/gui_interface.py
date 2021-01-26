@@ -3,7 +3,7 @@
 import sys
 import rospy
 from std_msgs.msg import String
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QHBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox
 from PyQt5.QtCore import Qt
 
 
@@ -20,7 +20,7 @@ class Interface(QMainWindow):
     def initUI(self):
         global app
         self.quit_button = QPushButton('Quit')
-        self.planning    = QPushButton('Plan Path')
+        self.plan        = QPushButton('Plan Path')
         self.execute     = QPushButton('Execute Path')
         self.init_pose   = QPushButton('Initial Pose')
         self.tuck_pose   = QPushButton('Tuck Arm')
@@ -29,9 +29,9 @@ class Interface(QMainWindow):
         widget = QWidget()
         self.setCentralWidget(widget)
 
-        # A layout
+        # A layout of the buttons
         layout = QHBoxLayout()
-        layout.addWidget(self.planning)
+        layout.addWidget(self.plan)
         layout.addWidget(self.execute)
         layout.addWidget(self.init_pose)
         layout.addWidget(self.tuck_pose)
@@ -39,7 +39,7 @@ class Interface(QMainWindow):
         widget.setLayout(layout)
 
         self.quit_button.clicked.connect(app.exit)
-        self.planning.clicked.connect(self.publish_command)
+        self.plan.clicked.connect(self.publish_command)
         self.execute.clicked.connect(self.publish_command_b)
         self.init_pose.clicked.connect(self.publish_command_c)
         self.tuck_pose.clicked.connect(self.publish_command_d)
