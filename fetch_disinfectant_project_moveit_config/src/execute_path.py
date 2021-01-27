@@ -54,7 +54,7 @@ class ExecutePath(object):
     # Set path_to_goal to the FollowTrajectoryClient Class
     self.path_to_goal=FollowTrajectoryClient()
 
-
+    self.traj_vel = 0.8
 
   def waypoint_callback(self,msg):
       self.waypoints = []
@@ -83,7 +83,7 @@ class ExecutePath(object):
                                        0.1,              # eef_step
                                        0.00)             # jump_threshold
 
-    plan = self.group.retime_trajectory(self.robot.get_current_state(),plan,self.traj_vel)
+    plan = self.group.retime_trajectory(self.robot.get_current_state(),plan,.8)
     # Note: We are just planning, not asking move_group to actually move the robot yet:
     print("Path has been computed")
     return plan
