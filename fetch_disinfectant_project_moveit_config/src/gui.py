@@ -2,6 +2,7 @@
 
 import sys
 import rospy
+import numpy as np
 from std_msgs.msg import String
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox
 from PyQt5.QtCore import Qt
@@ -14,7 +15,7 @@ class Interface(QMainWindow):
         super(Interface,self).__init__()
         self.gui_input_pub = rospy.Publisher('gui_input', String, queue_size = 10)
         self.setWindowTitle('Fetch Disinfectant Project')
-        self.setGeometry(300, 300, 600, 400)
+        self.setGeometry(300, 300, 600, 500)
         # self.s1 = SliderDisplay('Attenuation', 0, 1, 100)
         self.initUI()
 
@@ -36,9 +37,9 @@ class Interface(QMainWindow):
         # A Layout of computing the Irradiation
         irradiation = QGroupBox('Irradiation')
         irradiation_layout = QVBoxLayout()
-        self.n = SliderDisplay('Attenuation', 0, 1, 100)
-        self.P = SliderDisplay('Power Rating (W)',0,50,100)
-        self.A = SliderDisplay('Area (m^2)', 0 , 1, 100)
+        self.n = SliderDisplay('Attenuation', 0, 1, 100, 2)
+        self.P = SliderDisplay('Power Rating (W)',0,50,50, 0)
+        self.A = SliderDisplay('Area (m^2)', 0 , 100, 1000, 3, 2)
         self.I_label = QLabel('Irradation (W/m^2): ')
         irradiation_layout.addWidget(self.n)
         irradiation_layout.addWidget(self.P)
@@ -50,13 +51,11 @@ class Interface(QMainWindow):
         # A Layout of computing Time at each waypoint
         time_exposure = QGroupBox('Time Exposure')
         time_exposure_layout = QVBoxLayout()
-        self.S = SliderDisplay('Survival (%) ',0, 10, 1000)
-        self.k = SliderDisplay('Constant',0,1,100000)
-        # self.A = SliderDisplay('Area (m^2)', 0 , 1, 100)
+        self.S = SliderDisplay('Survival Fraction ',1, 1000, 1000, 5, 5)
+        self.k = SliderDisplay('UV rate const. (m^2/J)',0, 1000, 1000, 5, 5)
         self.time_label = QLabel('Time Exposure (sec): ')
         time_exposure_layout.addWidget(self.S)
         time_exposure_layout.addWidget(self.k)
-        # irradiation_layout.addWidget(self.A)
         time_exposure_layout.addWidget(self.time_label)
         time_exposure_layout.addWidget(self.S)
         time_exposure_layout.addWidget(self.k)
@@ -97,6 +96,7 @@ class Interface(QMainWindow):
         self.execute.clicked.connect(self.publish_command_b)
         self.init_pose.clicked.connect(self.publish_command_c)
         self.tuck_pose.clicked.connect(self.publish_command_d)
+        self.compute_time.clicked.connect(self.compute_time_exposure)
         self.show()
 
     def publish_command(self):
@@ -116,8 +116,16 @@ class Interface(QMainWindow):
         n = self.n.value()
         P = self.P.value()
         A = self.A.value()
-        I = n * P / A
-        self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(I))
+        self.I = n * P / A
+        self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+
+    def compute_time_exposure(self):
+        s = self.S.value()
+        k = self.k.value()
+        I = self.I
+
+        T = -np.log(s)/(k*I)
+        self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
 def run():
     # rospy.init_node('gui_interface')
