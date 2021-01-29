@@ -4,7 +4,7 @@ import sys
 import rospy
 import numpy as np
 from std_msgs.msg import String
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton
 from PyQt5.QtCore import Qt
 from slider import SliderDisplay
 
@@ -30,6 +30,7 @@ class Interface(QMainWindow):
         self.init_pose   = QPushButton('Initial Pose')
         self.tuck_pose   = QPushButton('Tuck Arm')
 
+
         # A widget to hold everything
         widget = QWidget()
         self.setCentralWidget(widget)
@@ -51,15 +52,42 @@ class Interface(QMainWindow):
         # A Layout of computing Time at each waypoint
         time_exposure = QGroupBox('Time Exposure')
         time_exposure_layout = QVBoxLayout()
-        self.S = SliderDisplay('Survival Fraction ',1, 1000, 1000, 5, 5)
+
+        sub_layout = QGridLayout()
+        self.disinfectant_label = QLabel(' Disinfection Percentage: ')
+        sub_layout.addWidget(self.disinfectant_label, 0, 0)
+
+        self.disinfectant_button = QRadioButton('90%')
+        self.disinfectant_button.setChecked(True)
+        self.disinfectant_button.country = '90'
+        self.disinfectant_button.toggled.connect(self.onClicked)
+        sub_layout.addWidget(self.disinfectant_button, 0, 1)
+
+        self.disinfectant_button = QRadioButton('99%')
+        self.disinfectant_button.country = '99'
+        self.disinfectant_button.toggled.connect(self.onClicked)
+        sub_layout.addWidget(self.disinfectant_button, 0, 2)
+
+        self.disinfectant_button = QRadioButton("99.9%")
+        self.disinfectant_button.country = "99.9"
+        self.disinfectant_button.toggled.connect(self.onClicked)
+        sub_layout.addWidget(self.disinfectant_button, 0, 3)
+
+        self.disinfectant_button = QRadioButton("99.99%")
+        self.disinfectant_button.country = "99.99"
+        self.disinfectant_button.toggled.connect(self.onClicked)
+        sub_layout.addWidget(self.disinfectant_button, 0, 4)
+
+        self.disinfectant_button = QRadioButton("99.999%")
+        self.disinfectant_button.country = "99.999"
+        self.disinfectant_button.toggled.connect(self.onClicked)
+        sub_layout.addWidget(self.disinfectant_button, 0, 5)
+
+        time_exposure_layout.addLayout(sub_layout)
         self.k = SliderDisplay('UV rate const. (m^2/J)',0, 1000, 1000, 5, 5)
-        self.time_label = QLabel('Time Exposure (sec): ')
-        time_exposure_layout.addWidget(self.S)
         time_exposure_layout.addWidget(self.k)
-        time_exposure_layout.addWidget(self.time_label)
-        time_exposure_layout.addWidget(self.S)
-        time_exposure_layout.addWidget(self.k)
-        time_exposure_layout.addWidget(self.compute_time)
+        self.Time_label = QLabel('Time Exposure (sec): ')
+        time_exposure_layout.addWidget(self.Time_label)
         time_exposure.setLayout(time_exposure_layout)
 
 
@@ -111,6 +139,11 @@ class Interface(QMainWindow):
     def publish_command_d(self):
         # self.gui_input_pub.publish("3")
         print(3)
+
+    def onClicked(self):
+        radioButton = self.sender()
+        if radioButton.isChecked():
+            print("Country is %s" % (radioButton.country))
 
     def compute_irradiation(self):
         n = self.n.value()
