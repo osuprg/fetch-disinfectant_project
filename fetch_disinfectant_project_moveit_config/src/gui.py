@@ -23,31 +23,66 @@ class Interface(QMainWindow):
     def initUI(self):
         global app
         self.quit_button = QPushButton('Quit')
-        self.compute_irr = QPushButton('Compute Irradiantion')
-        self.compute_time= QPushButton('Compute Time')
         self.plan        = QPushButton('Plan Path')
         self.execute     = QPushButton('Execute Path')
         self.init_pose   = QPushButton('Initial Pose')
         self.tuck_pose   = QPushButton('Tuck Arm')
+
+        self.Attenuation_slider = QSlider(Qt.Horizontal)
+        self.Attenuation_slider.setMinimum(0)
+        self.Attenuation_slider.setMaximum(100)
+        self.Attenuation_label = QLabel('Attenuation: ' + ' {}'.format(0.01))
+        self.n = 0.01
+
+        self.Power_slider = QSlider(Qt.Horizontal)
+        self.Power_slider.setMinimum(1)
+        self.Power_slider.setMaximum(50)
+        self.Power_label = QLabel('Power Rating (W): ' + ' {}'.format(1))
+        self.P = 1
+
+        self.Area_slider = QSlider(Qt.Horizontal)
+        self.Area_slider.setMinimum(0)
+        self.Area_slider.setMaximum(1000)
+        self.Area_label = QLabel('Area (m^2): ' + ' {}'.format(0.01))
+        self.A = 0.01
+
+        self.UV_constant_slider = QSlider(Qt.Horizontal)
+        self.UV_constant_slider.setMinimum(0)
+        self.UV_constant_slider.setMaximum(1000)
+        self.UV_constant_label = QLabel('UV rate const. (m^2/J): ' + ' {}'.format(0.001))
+        self.k = 0.01
+
+        self.I_label = QLabel('Irradation (W/m^2): ')
+        self.Time_label = QLabel('Time Exposure (sec): ')
 
 
         # A widget to hold everything
         widget = QWidget()
         self.setCentralWidget(widget)
 
+
         # A Layout of computing the Irradiation
         irradiation = QGroupBox('Irradiation')
         irradiation_layout = QVBoxLayout()
-        self.n = SliderDisplay('Attenuation', 0, 1, 100, 2)
-        self.P = SliderDisplay('Power Rating (W)',0,50,50, 0)
-        self.A = SliderDisplay('Area (m^2)', 0 , 100, 1000, 3, 2)
-        self.I_label = QLabel('Irradation (W/m^2): ')
-        irradiation_layout.addWidget(self.n)
-        irradiation_layout.addWidget(self.P)
-        irradiation_layout.addWidget(self.A)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.Attenuation_label)
+        hbox.addWidget(self.Attenuation_slider)
+        irradiation_layout.addLayout(hbox)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.Power_label)
+        hbox.addWidget(self.Power_slider)
+        irradiation_layout.addLayout(hbox)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.Area_label)
+        hbox.addWidget(self.Area_slider)
+        irradiation_layout.addLayout(hbox)
+
         irradiation_layout.addWidget(self.I_label)
-        irradiation_layout.addWidget(self.compute_irr)
         irradiation.setLayout(irradiation_layout)
+
 
         # A Layout of computing Time at each waypoint
         time_exposure = QGroupBox('Time Exposure')
@@ -59,34 +94,38 @@ class Interface(QMainWindow):
 
         self.disinfectant_button = QRadioButton('90%')
         self.disinfectant_button.setChecked(True)
-        self.disinfectant_button.country = '90'
+        self.disinfectant_button.country = 0.1
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 1)
 
         self.disinfectant_button = QRadioButton('99%')
-        self.disinfectant_button.country = '99'
+        self.disinfectant_button.country = 0.01
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 2)
 
         self.disinfectant_button = QRadioButton("99.9%")
-        self.disinfectant_button.country = "99.9"
+        self.disinfectant_button.country = 0.001
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 3)
 
         self.disinfectant_button = QRadioButton("99.99%")
-        self.disinfectant_button.country = "99.99"
+        self.disinfectant_button.country = 0.0001
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 4)
 
         self.disinfectant_button = QRadioButton("99.999%")
-        self.disinfectant_button.country = "99.999"
+        self.disinfectant_button.country = 0.00001
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 5)
 
         time_exposure_layout.addLayout(sub_layout)
-        self.k = SliderDisplay('UV rate const. (m^2/J)',0, 1000, 1000, 5, 5)
-        time_exposure_layout.addWidget(self.k)
-        self.Time_label = QLabel('Time Exposure (sec): ')
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.UV_constant_label)
+        hbox.addWidget(self.UV_constant_slider)
+        time_exposure_layout.addLayout(hbox)
+
+
         time_exposure_layout.addWidget(self.Time_label)
         time_exposure.setLayout(time_exposure_layout)
 
@@ -97,6 +136,7 @@ class Interface(QMainWindow):
         h_box.addWidget(self.plan)
         h_box.addWidget(self.execute)
         plan_execute.setLayout(h_box)
+
 
         # A Horizontal Layout of arm control for two configurations
         control = QGroupBox('Control')
@@ -116,15 +156,19 @@ class Interface(QMainWindow):
         layout.addWidget(control)
         layout.addWidget(self.quit_button)
 
-
-
+        # Buttons and sliders clicked/connect
         self.quit_button.clicked.connect(app.exit)
-        self.compute_irr.clicked.connect(self.compute_irradiation)
+
         self.plan.clicked.connect(self.publish_command)
         self.execute.clicked.connect(self.publish_command_b)
         self.init_pose.clicked.connect(self.publish_command_c)
         self.tuck_pose.clicked.connect(self.publish_command_d)
-        self.compute_time.clicked.connect(self.compute_time_exposure)
+
+        self.Attenuation_slider.valueChanged.connect(self.value_change)
+        self.Power_slider.valueChanged.connect(self.value_change)
+        self.Area_slider.valueChanged.connect(self.value_change)
+        self.UV_constant_slider.valueChanged.connect(self.value_change)
+
         self.show()
 
     def publish_command(self):
@@ -143,22 +187,38 @@ class Interface(QMainWindow):
     def onClicked(self):
         radioButton = self.sender()
         if radioButton.isChecked():
-            print("Country is %s" % (radioButton.country))
+            self.S = radioButton.country
+        self.value_change()
 
-    def compute_irradiation(self):
-        n = self.n.value()
-        P = self.P.value()
-        A = self.A.value()
-        self.I = n * P / A
-        self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+    def value_change(self):
+        print("yo")
+        # self.n.value()
+        # self.P.value()
+        # self.A.value()
+        # self.I = n * P / A
+        # self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+        # s = self.S.value()
+        # k = self.k.value()
+        # I = self.I
+        # T = -np.log(s)/(k*I)
+        # self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
-    def compute_time_exposure(self):
-        s = self.S.value()
-        k = self.k.value()
-        I = self.I
+    # def compute_irradiation(self):
+    #     n = self.n.value()
+    #     P = self.P.value()
+    #     A = self.A.value()
+    #     self.I = n * P / A
+    #     self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+    #
+    # def compute_time_exposure(self):
+    #     s = self.S.value()
+    #     k = self.k.value()
+    #     I = self.I
+    #
+    #     T = -np.log(s)/(k*I)
+    #     self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
-        T = -np.log(s)/(k*I)
-        self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
+
 
 def run():
     # rospy.init_node('gui_interface')
