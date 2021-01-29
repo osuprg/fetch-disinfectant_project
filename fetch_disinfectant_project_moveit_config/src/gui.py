@@ -29,31 +29,33 @@ class Interface(QMainWindow):
         self.tuck_pose   = QPushButton('Tuck Arm')
 
         self.Attenuation_slider = QSlider(Qt.Horizontal)
-        self.Attenuation_slider.setMinimum(0)
+        self.Attenuation_slider.setMinimum(1)
         self.Attenuation_slider.setMaximum(100)
-        self.Attenuation_label = QLabel('Attenuation: ' + ' {}'.format(0.01))
-        self.n = 0.01
+        self.Attenuation_label = QLabel('Attenuation: {}'.format(0.01))
+        # self.n = 0.01
 
         self.Power_slider = QSlider(Qt.Horizontal)
         self.Power_slider.setMinimum(1)
         self.Power_slider.setMaximum(50)
-        self.Power_label = QLabel('Power Rating (W): ' + ' {}'.format(1))
-        self.P = 1
+        self.Power_label = QLabel('Power Rating (W): {}'.format(1))
+        # self.P = 1
 
         self.Area_slider = QSlider(Qt.Horizontal)
-        self.Area_slider.setMinimum(0)
+        self.Area_slider.setMinimum(1)
         self.Area_slider.setMaximum(1000)
-        self.Area_label = QLabel('Area (m^2): ' + ' {}'.format(0.01))
-        self.A = 0.01
+        self.Area_label = QLabel('Area (m^2): {}'.format(0.01))
+        # self.A = 0.01
 
         self.UV_constant_slider = QSlider(Qt.Horizontal)
-        self.UV_constant_slider.setMinimum(0)
-        self.UV_constant_slider.setMaximum(1000)
-        self.UV_constant_label = QLabel('UV rate const. (m^2/J): ' + ' {}'.format(0.001))
-        self.k = 0.01
+        self.UV_constant_slider.setMinimum(1)
+        self.UV_constant_slider.setMaximum(9000)
+        self.UV_constant_label = QLabel('UV rate const. (m^2/J): {}'.format(0.001))
+        # self.k = 0.01
 
         self.I_label = QLabel('Irradation (W/m^2): ')
         self.Time_label = QLabel('Time Exposure (sec): ')
+
+        self.S = 0.1
 
 
         # A widget to hold everything
@@ -65,17 +67,17 @@ class Interface(QMainWindow):
         irradiation = QGroupBox('Irradiation')
         irradiation_layout = QVBoxLayout()
 
-        hbox = QHBoxLayout()
+        hbox = QVBoxLayout()
         hbox.addWidget(self.Attenuation_label)
         hbox.addWidget(self.Attenuation_slider)
         irradiation_layout.addLayout(hbox)
 
-        hbox = QHBoxLayout()
+        hbox = QVBoxLayout()
         hbox.addWidget(self.Power_label)
         hbox.addWidget(self.Power_slider)
         irradiation_layout.addLayout(hbox)
 
-        hbox = QHBoxLayout()
+        hbox = QVBoxLayout()
         hbox.addWidget(self.Area_label)
         hbox.addWidget(self.Area_slider)
         irradiation_layout.addLayout(hbox)
@@ -120,7 +122,7 @@ class Interface(QMainWindow):
 
         time_exposure_layout.addLayout(sub_layout)
 
-        hbox = QHBoxLayout()
+        hbox = QVBoxLayout()
         hbox.addWidget(self.UV_constant_label)
         hbox.addWidget(self.UV_constant_slider)
         time_exposure_layout.addLayout(hbox)
@@ -191,32 +193,24 @@ class Interface(QMainWindow):
         self.value_change()
 
     def value_change(self):
-        print("yo")
-        # self.n.value()
-        # self.P.value()
-        # self.A.value()
-        # self.I = n * P / A
-        # self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
-        # s = self.S.value()
-        # k = self.k.value()
-        # I = self.I
-        # T = -np.log(s)/(k*I)
-        # self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
-    # def compute_irradiation(self):
-    #     n = self.n.value()
-    #     P = self.P.value()
-    #     A = self.A.value()
-    #     self.I = n * P / A
-    #     self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
-    #
-    # def compute_time_exposure(self):
-    #     s = self.S.value()
-    #     k = self.k.value()
-    #     I = self.I
-    #
-    #     T = -np.log(s)/(k*I)
-    #     self.time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
+        self.n = float(self.Attenuation_slider.value())/(100)
+        self.Attenuation_label.setText('Attenuation: {}'.format(self.n))
+
+        self.P = float(self.Power_slider.value())/2
+        self.Power_label.setText('Power Rating (W): {}'.format(self.P))
+
+        self.A = float(self.Area_slider.value())/(1000)
+        self.Area_label.setText('Area (m^2):  {}'.format(self.A))
+
+        self.I = self.n * self.P / self.A
+        self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+
+        self.k = float(self.UV_constant_slider.value())/(10**5)
+        self.UV_constant_label.setText('UV rate const. (m^2/J): {0:.5f}'.format(self.k))
+
+        T = -np.log(self.S)/(self.k * self.I)
+        self.Time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
 
 
