@@ -15,8 +15,7 @@ class Interface(QMainWindow):
         super(Interface,self).__init__()
         self.gui_input_pub = rospy.Publisher('gui_input', String, queue_size = 10)
         self.setWindowTitle('Fetch Disinfectant Project')
-        self.setGeometry(300, 300, 600, 500)
-        # self.s1 = SliderDisplay('Attenuation', 0, 1, 100)
+        self.setGeometry(300, 300, 600, 400)
         self.initUI()
 
 
@@ -82,6 +81,7 @@ class Interface(QMainWindow):
         hbox.addWidget(self.Area_slider)
         irradiation_layout.addLayout(hbox)
 
+        # irradiation_layout.setSpacing(100)
         irradiation_layout.addWidget(self.I_label)
         irradiation.setLayout(irradiation_layout)
 
