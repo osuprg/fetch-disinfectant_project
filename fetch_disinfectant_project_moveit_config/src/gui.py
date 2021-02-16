@@ -48,10 +48,10 @@ class Interface(QMainWindow):
         self.UV_constant_slider = QSlider(Qt.Horizontal)
         self.UV_constant_slider.setMinimum(1)
         self.UV_constant_slider.setMaximum(9000)
-        self.UV_constant_label = QLabel('UV rate const. (m^2/J): {}'.format(0.001))
+        self.UV_constant_label = QLabel('UV rate constant (m^2/J): {}'.format(0.001))
         # self.k = 0.01
 
-        self.I_label = QLabel('Irradation (W/m^2): ')
+        self.I_label = QLabel('Irradiation (W/m^2): ')
         self.Time_label = QLabel('Time Exposure (sec): ')
 
         self.S = 0.1
@@ -174,17 +174,17 @@ class Interface(QMainWindow):
         self.show()
 
     def publish_command(self):
-        # self.gui_input_pub.publish("0")
-        print(0)
+        self.gui_input_pub.publish("0")
+        # print(0)
     def publish_command_b(self):
-        # self.gui_input_pub.publish("1")
-        print(1)
+        self.gui_input_pub.publish("1")
+        # print(1)
     def publish_command_c(self):
-        # self.gui_input_pub.publish("2")
-        print(2)
+        self.gui_input_pub.publish("2")
+        # print(2)
     def publish_command_d(self):
-        # self.gui_input_pub.publish("3")
-        print(3)
+        self.gui_input_pub.publish("3")
+        # print(3)
 
     def onClicked(self):
         radioButton = self.sender()
@@ -204,10 +204,10 @@ class Interface(QMainWindow):
         self.Area_label.setText('Area (m^2):  {}'.format(self.A))
 
         self.I = self.n * self.P / self.A
-        self.I_label.setText('Irradation (W/m^2): {0:.2f}'.format(self.I))
+        self.I_label.setText('Irradiation (W/m^2): {0:.2f}'.format(self.I))
 
         self.k = float(self.UV_constant_slider.value())/(10**5)
-        self.UV_constant_label.setText('UV rate const. (m^2/J): {0:.5f}'.format(self.k))
+        self.UV_constant_label.setText('UV rate constant (m^2/J): {0:.5f}'.format(self.k))
 
         T = -np.log(self.S)/(self.k * self.I)
         self.Time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
@@ -215,7 +215,7 @@ class Interface(QMainWindow):
 
 
 def run():
-    # rospy.init_node('gui_interface')
+    rospy.init_node('gui')
     global app
     app = QApplication(sys.argv)
     interface = Interface()
