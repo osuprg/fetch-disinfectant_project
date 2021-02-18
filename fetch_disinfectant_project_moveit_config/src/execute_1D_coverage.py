@@ -4,6 +4,7 @@ import sys
 import actionlib
 import subprocess
 import rospy
+import time
 import moveit_commander
 import moveit_msgs.msg
 import numpy as np
@@ -11,7 +12,7 @@ import numpy as np
 from threading import Thread
 from moveit_msgs.msg import MoveItErrorCodes, PlanningScene
 from moveit_python import MoveGroupInterface, PlanningSceneInterface
-from std_msgs.msg import String, Int16, Float64
+from std_msgs.msg import String, Int16, Float32
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, PoseArray
 
 class ExecutePath(object):
@@ -19,9 +20,8 @@ class ExecutePath(object):
   def __init__(self):
     super(ExecutePath, self).__init__()
 
-    self.gui_input_sub = rospy.Subscriber('gui_input', String, self.interface_callback)
-    self.time_ex_sub   = rospy.Subscriber('time_ex',   )
-    # self.waypoints_sub        = rospy.Subscriber('waypoints', PoseArray, self.waypoint_callback)
+    self.gui_input_sub     = rospy.Subscriber('gui_input',     String,  self.interface_callback)
+    self.vel_regulator_sub = rospy.Subscriber('vel_regulator', Float32, self.vel_callback)
 
     # First initialize `moveit_commander`
     moveit_commander.roscpp_initialize(sys.argv)
@@ -55,13 +55,12 @@ class ExecutePath(object):
     # Set path_to_goal to the FollowTrajectoryClient Class
     self.path_to_goal=FollowTrajectoryClient()
 
-    self.traj_vel = 1.0
+    self.vel = 1
 
-  # def waypoint_callback(self,msg):
-  #     self.waypoints = []
-  #     # Append poses to a list
-  #     for i in range(len(msg.poses)):
-  #         self.waypoints.append(msg.poses[i])
+  def vel_callback(self,msg):
+      self.vel = msg.data
+
+
 
   def interface_callback(self,gui_input):
 
@@ -83,28 +82,13 @@ class ExecutePath(object):
 
   def plan_cartesian_path(self):
     ## Cartesian Paths
-    waypoints = [Pose(Point(0.7,  0.603,1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.50, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.45, 1.305),Quaternion(0.000, 0.0, 0, 1)),
+    waypoints = [Pose(Point(0.7,  0.65, 1.305),Quaternion(0.000, 0.0, 0, 1)),
                  Pose(Point(0.7,  0.40, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.35, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.30, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.25, 1.305),Quaternion(0.000, 0.0, 0, 1)),
                  Pose(Point(0.7,  0.20, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.15, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.10, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.05, 1.305),Quaternion(0.000, 0.0, 0, 1)),
                  Pose(Point(0.7,  0.00, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.05, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.10, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.15, 1.305),Quaternion(0.000, 0.0, 0, 1)),
                  Pose(Point(0.7, -0.20, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.30, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.35, 1.305),Quaternion(0.000, 0.0, 0, 1)),
                  Pose(Point(0.7, -0.40, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.45, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.50, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.603,1.305),Quaternion(0.000, 0.0, 0, 1)),]
+                 Pose(Point(0.7, -0.65, 1.305),Quaternion(0.000, 0.0, 0, 1)),]
 
 
     (plan, fraction) = self.group.compute_cartesian_path(
@@ -114,14 +98,21 @@ class ExecutePath(object):
 
 
 
-    plan = self.group.retime_trajectory(self.robot.get_current_state(),plan,.1)
+    plan = self.group.retime_trajectory(self.robot.get_current_state(),
+                                        plan,
+                                        velocity_scaling_factor = self.vel,
+                                        acceleration_scaling_factor = 0.2)
+                                        
     # Note: We are just planning, not asking move_group to actually move the robot yet:
     print("Path has been computed")
+    print(self.vel)
     return plan
 
   def execute_plan(self, plan):
+      start_time = time.time()
  #     print ("WAYPOINTS ARE:", len(self.waypoints), self.waypoints)
       self.group.execute(plan, wait=True)
+      print(time.time()-start_time)
 
 
 class FollowTrajectoryClient(object):
@@ -160,7 +151,7 @@ class FollowTrajectoryClient(object):
 
         joints = ["torso_lift_joint", "shoulder_pan_joint", "shoulder_lift_joint", "upperarm_roll_joint",
                   "elbow_flex_joint", "forearm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
-        pose = [.3, 1.41, 0.30, -0.22, -2.25, -1.56, 1.80, -0.37,]
+        pose = [.05, 1.41, 0.30, -0.22, -2.25, -1.56, 1.80, -0.37,]
         while not rospy.is_shutdown():
             result = self.client.moveToJointPosition(joints,
                                                      pose,
