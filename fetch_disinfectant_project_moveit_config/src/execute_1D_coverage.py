@@ -101,8 +101,8 @@ class ExecutePath(object):
     plan = self.group.retime_trajectory(self.robot.get_current_state(),
                                         plan,
                                         velocity_scaling_factor = self.vel,
-                                        acceleration_scaling_factor = 0.2)
-                                        
+                                        acceleration_scaling_factor = 0.8)
+
     # Note: We are just planning, not asking move_group to actually move the robot yet:
     print("Path has been computed")
     print(self.vel)
