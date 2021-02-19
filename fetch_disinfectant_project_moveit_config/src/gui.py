@@ -3,7 +3,7 @@
 import sys
 import rospy
 import numpy as np
-from std_msgs.msg import String
+from std_msgs.msg import String, Float64
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton
 from PyQt5.QtCore import Qt
 from slider import SliderDisplay
@@ -13,7 +13,8 @@ class Interface(QMainWindow):
 
     def __init__(self):
         super(Interface,self).__init__()
-        self.gui_input_pub = rospy.Publisher('gui_input', String, queue_size = 10)
+        self.gui_input_pub     = rospy.Publisher('gui_input',     String,  queue_size = 10)
+        self.time_exposure_pub = rospy.Publisher('time_exposure', Float64, queue_size = 10)
         self.setWindowTitle('Fetch Disinfectant Project')
         self.setGeometry(300, 300, 600, 400)
         self.initUI()
@@ -41,8 +42,8 @@ class Interface(QMainWindow):
 
         self.Area_slider = QSlider(Qt.Horizontal)
         self.Area_slider.setMinimum(1)
-        self.Area_slider.setMaximum(1000)
-        self.Area_label = QLabel('Area (m^2): {}'.format(0.01))
+        self.Area_slider.setMaximum(200)
+        self.Area_label = QLabel('Area (cm^2): {}'.format(0.01))
         # self.A = 0.01
 
         self.UV_constant_slider = QSlider(Qt.Horizontal)
@@ -51,7 +52,7 @@ class Interface(QMainWindow):
         self.UV_constant_label = QLabel('UV rate constant (m^2/J): {}'.format(0.001))
         # self.k = 0.01
 
-        self.I_label = QLabel('Irradiation (W/m^2): ')
+        self.I_label = QLabel('Irradiation (mW/cm^2): ')
         self.Time_label = QLabel('Time Exposure (sec): ')
 
         self.S = 0.1
@@ -200,11 +201,11 @@ class Interface(QMainWindow):
         self.P = float(self.Power_slider.value())/2
         self.Power_label.setText('Power Rating (W): {}'.format(self.P))
 
-        self.A = float(self.Area_slider.value())/(1000)
-        self.Area_label.setText('Area (m^2):  {}'.format(self.A))
+        self.A = float(self.Area_slider.value())/(20)*10
+        self.Area_label.setText('Area (cm^2):  {}'.format(self.A))
 
-        self.I = self.n * self.P / self.A
-        self.I_label.setText('Irradiation (W/m^2): {0:.2f}'.format(self.I))
+        self.I = self.n * self.P / self.A *1000
+        self.I_label.setText('Irradiation (mW/cm^2): {0:.2f}'.format(self.I))
 
         self.k = float(self.UV_constant_slider.value())/(10**5)
         self.UV_constant_label.setText('UV rate constant (m^2/J): {0:.5f}'.format(self.k))
@@ -212,7 +213,7 @@ class Interface(QMainWindow):
         T = -np.log(self.S)/(self.k * self.I)
         self.Time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
 
-
+        self.time_exposure_pub.publish(T)
 
 def run():
     rospy.init_node('gui')

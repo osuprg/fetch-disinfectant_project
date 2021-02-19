@@ -4,7 +4,7 @@ import sys
 import rospy
 import numpy as np
 from std_msgs.msg import String, Float32
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton, QInputDialog
 from PyQt5.QtCore import Qt
 from slider import SliderDisplay
 
@@ -34,10 +34,15 @@ class Interface(QMainWindow):
         self.UV_constant_label = QLabel('UV rate constant (m^2/J): {}'.format(0.001))
         # self.k = 0.01
 
-        self.I_label     = QLabel('Irradiation (mW/cm^2): ')
+        self.I_label      = QLabel('Irradiation (mW/cm^2): ')
         self.Dosage_label = QLabel('UV Dosage (mJ/cm^2)')
         # self.Time_label = QLabel('Time Exposure (sec): ')
 
+        #
+        # self.constant_input = QInputDialog('UV Constant')
+
+
+        #
         self.S = 0.1
 
 
@@ -85,6 +90,7 @@ class Interface(QMainWindow):
         hbox = QVBoxLayout()
         hbox.addWidget(self.UV_constant_label)
         hbox.addWidget(self.UV_constant_slider)
+        # hbox.addWidget(QInputDialog.getDouble( self, "get dub", "value:", 10.50, 0, 100, 10))
         UV_dosage_layout.addLayout(hbox)
 
 
@@ -153,8 +159,8 @@ class Interface(QMainWindow):
         self.k = float(self.UV_constant_slider.value())/(10**5)
         self.UV_constant_label.setText('UV rate constant (m^2/J): {0:.5f}'.format(self.k))
 
-        D = -np.log(self.S)/(self.k)/10
-        self.Dosage_label.setText('Dosage at a point (mJ/cm^2): {0:.2f}'.format(D))
+        D = -np.log(self.S)/(self.k)
+        self.Dosage_label.setText('Dosage at a point (J/m^2): {0:.2f}'.format(D))
 
         self.UV_dosage_pub.publish(D)
 
