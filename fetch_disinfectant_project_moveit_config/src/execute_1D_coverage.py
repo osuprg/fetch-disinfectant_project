@@ -56,11 +56,16 @@ class ExecutePath(object):
     self.path_to_goal=FollowTrajectoryClient()
 
     self.vel = 1
+    self.accel = .2
+
 
   def vel_callback(self,msg):
-      self.vel = msg.data
+      self.vel   = msg.data
 
+      self.accel = (self.vel**2) / ( 5 * 0.55  )
 
+      # if self.accel > 0.7:
+      #     self.accel = 0.7/8
 
   def interface_callback(self,gui_input):
 
@@ -82,14 +87,16 @@ class ExecutePath(object):
 
   def plan_cartesian_path(self):
     ## Cartesian Paths
-    waypoints = [Pose(Point(0.7,  0.65, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.40, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.20, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7,  0.00, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.20, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.40, 1.305),Quaternion(0.000, 0.0, 0, 1)),
-                 Pose(Point(0.7, -0.65, 1.305),Quaternion(0.000, 0.0, 0, 1)),]
-
+    waypoints = [Pose(Point(0.77,  0.65, 1.2),Quaternion(0.131, 0, 0, 0.991)),
+                 Pose(Point(0.77,  0.65, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77,  0.40, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77,  0.20, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77,  0.00, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77, -0.20, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77, -0.40, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77, -0.65, 1.2),Quaternion(0.000, 0.0, 0, 1)),
+                 Pose(Point(0.77, -0.65, 1.2),Quaternion(-0.131, 0, 0, 0.991)),
+                ]
 
     (plan, fraction) = self.group.compute_cartesian_path(
                                        waypoints,   # waypoints to follow
@@ -101,18 +108,19 @@ class ExecutePath(object):
     plan = self.group.retime_trajectory(self.robot.get_current_state(),
                                         plan,
                                         velocity_scaling_factor = self.vel,
-                                        acceleration_scaling_factor = 0.8)
+                                        acceleration_scaling_factor = self.accel)
 
     # Note: We are just planning, not asking move_group to actually move the robot yet:
     print("Path has been computed")
     print(self.vel)
+    print(self.accel)
     return plan
 
   def execute_plan(self, plan):
       start_time = time.time()
  #     print ("WAYPOINTS ARE:", len(self.waypoints), self.waypoints)
       self.group.execute(plan, wait=True)
-      print(time.time()-start_time)
+      # print(time.time()-start_time)
 
 
 class FollowTrajectoryClient(object):

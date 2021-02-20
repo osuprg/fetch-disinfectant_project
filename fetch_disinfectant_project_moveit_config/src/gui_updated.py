@@ -30,7 +30,7 @@ class Interface(QMainWindow):
 
         self.UV_constant_slider = QSlider(Qt.Horizontal)
         self.UV_constant_slider.setMinimum(1)
-        self.UV_constant_slider.setMaximum(9000)
+        self.UV_constant_slider.setMaximum(40000)
         self.UV_constant_label = QLabel('UV rate constant (m^2/J): {}'.format(0.001))
         # self.k = 0.01
 
