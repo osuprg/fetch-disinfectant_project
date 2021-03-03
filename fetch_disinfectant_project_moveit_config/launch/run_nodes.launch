@@ -6,5 +6,7 @@
   <node pkg="fetch_disinfectant_project_moveit_config" type="gui_interface.py"              name="gui_interface"               output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="execute_path.py"               name="execute_path"                output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="convex_hull.py"                name="convex_hull"                 output="screen"/>
+  <!-- <node pkg="fetch_disinfectant_project_moveit_config" type="gui.py"                  name="gui"                 output="screen"/>
+  <node pkg="fetch_disinfectant_project_moveit_config" type="execute_1D_coverage.py"  name="execute_1D_coverage" output="screen"/> -->
 
 </launch>
