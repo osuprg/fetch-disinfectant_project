@@ -3,8 +3,8 @@
 import sys
 import rospy
 import numpy as np
-from std_msgs.msg import String, Float64
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton
+from std_msgs.msg import String, Float32
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton, QInputDialog
 from PyQt5.QtCore import Qt
 from slider import SliderDisplay
 
@@ -13,8 +13,8 @@ class Interface(QMainWindow):
 
     def __init__(self):
         super(Interface,self).__init__()
-        self.gui_input_pub     = rospy.Publisher('gui_input',     String,  queue_size = 10)
-        self.time_exposure_pub = rospy.Publisher('time_exposure', Float64, queue_size = 10)
+        self.gui_input_pub = rospy.Publisher('gui_input', String,  queue_size = 10)
+        self.UV_dosage_pub = rospy.Publisher('UV_dosage', Float32, queue_size = 10)
         self.setWindowTitle('Fetch Disinfectant Project')
         self.setGeometry(300, 300, 600, 400)
         self.initUI()
@@ -28,33 +28,21 @@ class Interface(QMainWindow):
         self.init_pose   = QPushButton('Initial Pose')
         self.tuck_pose   = QPushButton('Tuck Arm')
 
-        self.Attenuation_slider = QSlider(Qt.Horizontal)
-        self.Attenuation_slider.setMinimum(1)
-        self.Attenuation_slider.setMaximum(100)
-        self.Attenuation_label = QLabel('Attenuation: {}'.format(0.01))
-        # self.n = 0.01
-
-        self.Power_slider = QSlider(Qt.Horizontal)
-        self.Power_slider.setMinimum(1)
-        self.Power_slider.setMaximum(50)
-        self.Power_label = QLabel('Power Rating (W): {}'.format(1))
-        # self.P = 1
-
-        self.Area_slider = QSlider(Qt.Horizontal)
-        self.Area_slider.setMinimum(1)
-        self.Area_slider.setMaximum(200)
-        self.Area_label = QLabel('Area (cm^2): {}'.format(0.01))
-        # self.A = 0.01
-
         self.UV_constant_slider = QSlider(Qt.Horizontal)
         self.UV_constant_slider.setMinimum(1)
-        self.UV_constant_slider.setMaximum(9000)
+        self.UV_constant_slider.setMaximum(40000)
         self.UV_constant_label = QLabel('UV rate constant (m^2/J): {}'.format(0.001))
         # self.k = 0.01
 
-        self.I_label = QLabel('Irradiation (mW/cm^2): ')
-        self.Time_label = QLabel('Time Exposure (sec): ')
+        self.I_label      = QLabel('Irradiation (mW/cm^2): ')
+        self.Dosage_label = QLabel('UV Dosage (J/m^2)')
+        # self.Time_label = QLabel('Time Exposure (sec): ')
 
+        #
+        # self.constant_input = QInputDialog('UV Constant')
+
+
+        #
         self.S = 0.1
 
 
@@ -63,36 +51,12 @@ class Interface(QMainWindow):
         self.setCentralWidget(widget)
 
 
-        # A Layout of computing the Irradiation
-        irradiation = QGroupBox('Irradiation')
-        irradiation_layout = QVBoxLayout()
-
-        hbox = QVBoxLayout()
-        hbox.addWidget(self.Attenuation_label)
-        hbox.addWidget(self.Attenuation_slider)
-        irradiation_layout.addLayout(hbox)
-
-        hbox = QVBoxLayout()
-        hbox.addWidget(self.Power_label)
-        hbox.addWidget(self.Power_slider)
-        irradiation_layout.addLayout(hbox)
-
-        hbox = QVBoxLayout()
-        hbox.addWidget(self.Area_label)
-        hbox.addWidget(self.Area_slider)
-        irradiation_layout.addLayout(hbox)
-
-        # irradiation_layout.setSpacing(100)
-        irradiation_layout.addWidget(self.I_label)
-        irradiation.setLayout(irradiation_layout)
-
-
-        # A Layout of computing Time at each waypoint
-        time_exposure = QGroupBox('Time Exposure')
-        time_exposure_layout = QVBoxLayout()
+        # A Layout of computing Dosage at a waypoint
+        UV_dosage = QGroupBox('UV Dose')
+        UV_dosage_layout = QVBoxLayout()
 
         sub_layout = QGridLayout()
-        self.disinfectant_label = QLabel(' Disinfection Percentage: ')
+        self.disinfectant_label = QLabel(' Disinfection rate: ')
         sub_layout.addWidget(self.disinfectant_label, 0, 0)
 
         self.disinfectant_button = QRadioButton('90%')
@@ -121,16 +85,17 @@ class Interface(QMainWindow):
         self.disinfectant_button.toggled.connect(self.onClicked)
         sub_layout.addWidget(self.disinfectant_button, 0, 5)
 
-        time_exposure_layout.addLayout(sub_layout)
+        UV_dosage_layout.addLayout(sub_layout)
 
         hbox = QVBoxLayout()
         hbox.addWidget(self.UV_constant_label)
         hbox.addWidget(self.UV_constant_slider)
-        time_exposure_layout.addLayout(hbox)
+        # hbox.addWidget(QInputDialog.getDouble( self, "get dub", "value:", 10.50, 0, 100, 10))
+        UV_dosage_layout.addLayout(hbox)
 
 
-        time_exposure_layout.addWidget(self.Time_label)
-        time_exposure.setLayout(time_exposure_layout)
+        UV_dosage_layout.addWidget(self.Dosage_label)
+        UV_dosage.setLayout(UV_dosage_layout)
 
 
         # A Horizontal Layout of arm control for two configurations
@@ -153,8 +118,7 @@ class Interface(QMainWindow):
         layout = QVBoxLayout()
         widget.setLayout(layout)
 
-        layout.addWidget(irradiation)
-        layout.addWidget(time_exposure)
+        layout.addWidget(UV_dosage)
         layout.addWidget(plan_execute)
         layout.addWidget(control)
         layout.addWidget(self.quit_button)
@@ -167,9 +131,6 @@ class Interface(QMainWindow):
         self.init_pose.clicked.connect(self.publish_command_c)
         self.tuck_pose.clicked.connect(self.publish_command_d)
 
-        self.Attenuation_slider.valueChanged.connect(self.value_change)
-        self.Power_slider.valueChanged.connect(self.value_change)
-        self.Area_slider.valueChanged.connect(self.value_change)
         self.UV_constant_slider.valueChanged.connect(self.value_change)
 
         self.show()
@@ -195,25 +156,13 @@ class Interface(QMainWindow):
 
     def value_change(self):
 
-        self.n = float(self.Attenuation_slider.value())/(100)
-        self.Attenuation_label.setText('Attenuation: {}'.format(self.n))
-
-        self.P = float(self.Power_slider.value())/2
-        self.Power_label.setText('Power Rating (W): {}'.format(self.P))
-
-        self.A = float(self.Area_slider.value())/(20)*10
-        self.Area_label.setText('Area (cm^2):  {}'.format(self.A))
-
-        self.I = self.n * self.P / self.A *1000
-        self.I_label.setText('Irradiation (mW/cm^2): {0:.2f}'.format(self.I))
-
         self.k = float(self.UV_constant_slider.value())/(10**5)
-        self.UV_constant_label.setText('UV rate constant (m^2/J): {0:.5f}'.format(self.k))
+        self.UV_constant_label.setText('UV rate constant, k (m^2/J): {0:.5f}'.format(self.k))
 
-        T = -np.log(self.S)/(self.k * self.I)
-        self.Time_label.setText('Time exposure per waypoint (sec): {0:.2f}'.format(T))
+        D = -np.log(self.S)/(self.k)
+        self.Dosage_label.setText('Dose (J/m^2): {0:.2f}'.format(D))
 
-        self.time_exposure_pub.publish(T)
+        self.UV_dosage_pub.publish(D)
 
 def run():
     rospy.init_node('gui')
