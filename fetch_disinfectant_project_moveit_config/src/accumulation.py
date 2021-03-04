@@ -17,7 +17,7 @@ class Accumulation:
 		self.min_dosage = None
 
 		# import polynomial model from the best_fit python script
-		self.model = fit(16, plotter = False)
+		self.model = fit(15, plotter = False)
 		self.req_dosage = 1
 
 	def UV_dosage_callback(self,msg):
