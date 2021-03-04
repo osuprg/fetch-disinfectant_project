@@ -38,10 +38,13 @@ class Laser_filter:
 		self.heatmap.pose.position.z =  -.3
 		self.heatmap.pose.orientation.w = -1.0
 
-		self.model = fit(16, plotter = False)
+		# Init light model
+		self.model = fit(15, plotter = False)
 
-
+		# Init id value
 		self.id = 0
+
+		# Define a linspace of alpha
 		self.alpha = np.linspace(0.05, 0.0005, 10)
 		self.dist  = np.linspace(-0.19, -.21, 10)
 		self.scale = np.linspace(0.01, 0.1,10)
@@ -78,7 +81,7 @@ if __name__ == '__main__':
  	rospy.init_node('heatmap')
 	func = Laser_filter()
 	# Loop at 10 Hz, dropping breadcrumbs on each loop.
-	rate = rospy.Rate(20)
+	rate = rospy.Rate(67)
 	while not rospy.is_shutdown():
 		func.heatmap_marker()
 
