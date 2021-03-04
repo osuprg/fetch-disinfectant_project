@@ -21,6 +21,7 @@ class ExecutePath(object):
 
     self.gui_input_sub        = rospy.Subscriber('gui_input', String, self.interface_callback)
     self.waypoints_sub        = rospy.Subscriber('waypoints', PoseArray, self.waypoint_callback)
+    self.vel_regulator_sub = rospy.Subscriber('vel_regulator', Float32, self.vel_callback)
 
     # First initialize `moveit_commander`
     moveit_commander.roscpp_initialize(sys.argv)
@@ -54,13 +55,22 @@ class ExecutePath(object):
     # Set path_to_goal to the FollowTrajectoryClient Class
     self.path_to_goal=FollowTrajectoryClient()
 
-    self.traj_vel = 0.8
+    # Set trajectory velocity for cartesian path
+    self.vel = 0.8
+
+    # Set acceleration for cartesian path
+    self.accel = 0.7
 
   def waypoint_callback(self,msg):
       self.waypoints = []
       # Append poses to a list
       for i in range(len(msg.poses)):
           self.waypoints.append(msg.poses[i])
+
+  def vel_callback(self,msg):
+      self.vel   = msg.data
+
+      self.accel = (self.vel**2) / ( 5 * 0.55  )
 
   def interface_callback(self,gui_input):
 
@@ -83,7 +93,11 @@ class ExecutePath(object):
                                        0.1,              # eef_step
                                        0.00)             # jump_threshold
 
-    plan = self.group.retime_trajectory(self.robot.get_current_state(),plan,.8)
+    # plan = self.group.retime_trajectory(self.robot.get_current_state(),plan,.57)
+    plan = self.group.retime_trajectory(self.robot.get_current_state(),
+                                        plan,
+                                        velocity_scaling_factor = self.vel,
+                                        acceleration_scaling_factor = self.accel)
     # Note: We are just planning, not asking move_group to actually move the robot yet:
     print("Path has been computed")
     return plan
