@@ -11,7 +11,7 @@ import numpy as np
 from threading import Thread
 from moveit_msgs.msg import MoveItErrorCodes, PlanningScene
 from moveit_python import MoveGroupInterface, PlanningSceneInterface
-from std_msgs.msg import String, Int16
+from std_msgs.msg import String, Int16, Float32
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, PoseArray
 
 class ExecutePath(object):
