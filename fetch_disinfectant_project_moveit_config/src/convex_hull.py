@@ -48,7 +48,7 @@ class Convex_hull:
         self.plane_marker.scale.x = 1
         self.plane_marker.scale.y = 1
         self.plane_marker.scale.z = 1
-        self.plane_marker.color.a = .8
+        self.plane_marker.color.a = .3
         self.plane_marker.color.r = 1.0
         self.plane_marker.color.g = 0
         self.plane_marker.color.b = 0
