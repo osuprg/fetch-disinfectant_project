@@ -34,7 +34,7 @@ class Waypoint_generator:
         self.Y = None
 
         # Set the waypoint resolution (distance between points)
-        self.resolution = .05
+        self.resolution = .02
 
         # Initialize waypoints as a PoseArray
         self.waypoints = PoseArray()

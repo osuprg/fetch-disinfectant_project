@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Camera
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -289,7 +289,7 @@ Visualization Manager:
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
-      Image Topic: /head_camera/depth/image_raw
+      Image Topic: /head_camera/rgb/image_raw
       Name: Camera
       Overlay Alpha: 0.5
       Queue Size: 2
@@ -345,7 +345,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.1417014598846436
+      Distance: 15.353849411010742
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -360,10 +360,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8297970294952393
+      Pitch: 1.1697967052459717
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.207364082336426
+      Yaw: 3.0573623180389404
     Saved: ~
 Window Geometry:
   Camera:
@@ -383,5 +383,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 927
-  X: 2913
-  Y: 27
+  X: 730
+  Y: 85

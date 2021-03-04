@@ -23,21 +23,12 @@
  <!-- Start rviz with custom rviz config file  -->
  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find fetch_disinfectant_project_moveit_config)/rviz/default.rviz" />
 
-  <!-- Start Convex Hull, Plane Fitting, GUI, Waypoint Generator, and Move Group Interface nodes -->
- <!-- <node pkg="fetch_disinfectant_project_moveit_config" type="convex_hull.py"        name="convex_hull"        output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="plane_fitting.py"      name="plane_fitting"      output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="gui_interface.py"      name="gui_interface"      output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="waypoint_generator.py" name="waypoint_generator" output="screen"/>
- <node pkg="fetch_disinfectant_project_moveit_config" type="movegroupinterface.py" name="movegroupinterface" output="screen"/> -->
-
  <!-- Start nodes for project -->
-  <node pkg="fetch_project_moveit_config" type="convex_hull.py"                name="convex_hull"                 output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="create_interactive_markers.py" name="create_interactive_markers"  output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="waypoint_generator.py"         name="waypoint_generator"          output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="gui_interface.py"              name="gui_interface"               output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="execute_path.py"               name="execute_path"                output="screen"/>
-  <!-- <node pkg="fetch_project_moveit_config" type="optimizer.py"                  name="optimizer"                   output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="collision_warning.py"          name="collision_warning"           output="screen"/>
-  <node pkg="fetch_project_moveit_config" type="transform_waypoint_frame.py"   name="transform_waypoint_frame"/> -->
+ <node pkg="fetch_disinfectant_project_moveit_config" type="create_interactive_markers.py" name="create_interactive_markers"  output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="waypoint_generator.py"         name="waypoint_generator"          output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="gui.py"                        name="gui"                         output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="execute_path.py"               name="execute_path"                output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="convex_hull.py"                name="convex_hull"                 output="screen"/>
+ <node pkg="fetch_disinfectant_project_moveit_config" type="accumulation.py"               name="accumulation"                output="screen"/>
 
 </launch>
