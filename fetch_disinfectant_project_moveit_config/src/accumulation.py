@@ -17,7 +17,7 @@ class Accumulation:
 		self.min_dosage = None
 
 		# import polynomial model from the best_fit python script
-		self.model = fit(15, plotter = False)
+		self.model = fit(16, plotter = False)
 		self.req_dosage = 1
 
 	def UV_dosage_callback(self,msg):
@@ -51,14 +51,14 @@ class Accumulation:
 					ramped_mask[r,c] = self.model(radius_dist)
 
 		print(sum(ramped_mask[10,5:16]))
-		irradiance = sum(ramped_mask[window/2, :])
+		uv_dose = sum(ramped_mask[10,5:16])
 
-		## The diameter of the considered disinfecting surface is 14 cm. If the arm's max velocity is 100 cm/s
-		## then a point would experience the flashlights irradiance for 20/100 seconds. Resulting in a dosage of
+		## The diameter of the considered disinfecting surface is 10 cm. If the arm's max velocity is 100 cm/s
+		## then a point would experience the flashlights irradiance for 10/100 seconds. Resulting in a dosage of
 		## .2 * Irradiance. The ratio between minimum and required dosage informs how much to reduce translational
 		## speed of the EE.
 
-		min_dosage = irradiance * 10/100
+		min_dosage = uv_dose * 10/100
 		ratio = min_dosage/self.req_dosage
 
 		if ratio > 1:
@@ -93,6 +93,4 @@ class Accumulation:
 if __name__ == '__main__':
 	rospy.init_node('accumulation')
 	tech = Accumulation()
-	# tech.velocity_regulator()
-	# tech.convolution_simulation()
 	rospy.spin()

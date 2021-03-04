@@ -35,7 +35,7 @@ class Interface(QMainWindow):
         # self.k = 0.01
 
         self.I_label      = QLabel('Irradiation (mW/cm^2): ')
-        self.Dosage_label = QLabel('UV Dosage (mJ/cm^2)')
+        self.Dosage_label = QLabel('UV Dosage (J/m^2)')
         # self.Time_label = QLabel('Time Exposure (sec): ')
 
         #
@@ -52,11 +52,11 @@ class Interface(QMainWindow):
 
 
         # A Layout of computing Dosage at a waypoint
-        UV_dosage = QGroupBox('UV Dosage')
+        UV_dosage = QGroupBox('UV Dose')
         UV_dosage_layout = QVBoxLayout()
 
         sub_layout = QGridLayout()
-        self.disinfectant_label = QLabel(' Disinfection Percentage: ')
+        self.disinfectant_label = QLabel(' Disinfection rate: ')
         sub_layout.addWidget(self.disinfectant_label, 0, 0)
 
         self.disinfectant_button = QRadioButton('90%')
@@ -157,10 +157,10 @@ class Interface(QMainWindow):
     def value_change(self):
 
         self.k = float(self.UV_constant_slider.value())/(10**5)
-        self.UV_constant_label.setText('UV rate constant (m^2/J): {0:.5f}'.format(self.k))
+        self.UV_constant_label.setText('UV rate constant, k (m^2/J): {0:.5f}'.format(self.k))
 
         D = -np.log(self.S)/(self.k)
-        self.Dosage_label.setText('Dosage at a point (J/m^2): {0:.2f}'.format(D))
+        self.Dosage_label.setText('Dose (J/m^2): {0:.2f}'.format(D))
 
         self.UV_dosage_pub.publish(D)
 
