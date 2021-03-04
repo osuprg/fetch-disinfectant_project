@@ -36,11 +36,6 @@ class Interface(QMainWindow):
 
         self.I_label      = QLabel('Irradiation (mW/cm^2): ')
         self.Dosage_label = QLabel('UV Dosage (J/m^2)')
-        # self.Time_label = QLabel('Time Exposure (sec): ')
-
-        #
-        # self.constant_input = QInputDialog('UV Constant')
-
 
         #
         self.S = 0.1
@@ -90,7 +85,6 @@ class Interface(QMainWindow):
         hbox = QVBoxLayout()
         hbox.addWidget(self.UV_constant_label)
         hbox.addWidget(self.UV_constant_slider)
-        # hbox.addWidget(QInputDialog.getDouble( self, "get dub", "value:", 10.50, 0, 100, 10))
         UV_dosage_layout.addLayout(hbox)
 
 

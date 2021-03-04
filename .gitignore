@@ -14,3 +14,5 @@
 /fetch_disinfectant_project_moveit_config/src/smd-gui.py
 /fetch_disinfectant_project_moveit_config/src/inputdialog.py
 /fetch_disinfectant_project_moveit_config/src/slider.py
+/fetch_disinfectant_project_moveit_config/src/gui_interface.py
+/fetch_disinfectant_project_moveit_config/src/gui_updated.py

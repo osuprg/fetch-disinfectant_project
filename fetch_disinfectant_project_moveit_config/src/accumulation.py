@@ -72,23 +72,6 @@ class Accumulation:
 
 		self.vel_regulator_pub.publish(vel)
 
-		# # Swipe the window across the swath, at row 5.  This is a bit special-cased for this example.
-		# for c in range(columns - window - 1):
-		# 	accumulator[0:window, c:c + window] += ramped_mask
-		#
-		# # Force it into 8 bit format and save as an image.
-		# formatted = (accumulator * 255 / np.max(accumulator)).astype('uint8')
-		# Image.fromarray(formatted).save('output.png')
-		# im = Image.fromarray(formatted)
-		# im.show()
-
-
-		# formatted = (ramped_mask * 255 / np.max(ramped_mask)).astype('uint8')
-		# im = Image.fromarray(formatted)
-		# im.show()
-		# Image.fromarray(formatted).save('ramped_mask.png')
-
-
 
 if __name__ == '__main__':
 	rospy.init_node('accumulation')
