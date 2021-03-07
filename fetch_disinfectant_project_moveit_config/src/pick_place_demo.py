@@ -14,7 +14,7 @@
 #     * Neither the name of the Fetch Robotics Inc. nor the names of its
 #       contributors may be used to endorse or promote products derived from
 #       this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -302,32 +302,32 @@ if __name__ == "__main__":
     cube_in_grapper = False
     grasping_client.stow()
 
-    while not rospy.is_shutdown():
-        head_action.look_at(1.2, 0.0, 0.0, "base_link")
-
-        # Get block to pick
-        fail_ct = 0
-        while not rospy.is_shutdown() and not cube_in_grapper:
-            rospy.loginfo("Picking object...")
-            grasping_client.updateScene()
-            cube, grasps = grasping_client.getGraspableObject()
-            if cube == None:
-                rospy.logwarn("Perception failed.")
-                # grasping_client.intermediate_stow()
-                grasping_client.stow()
-                head_action.look_at(1.2, 0.0, 0.0, "base_link")
-                continue
-
-            # Pick the block
-            if grasping_client.pick(cube, grasps):
-                cube_in_grapper = True
-                break
-            rospy.logwarn("Grasping failed.")
-            grasping_client.stow()
-            if fail_ct > 15:
-                fail_ct = 0
-                break
-            fail_ct += 1
+    # while not rospy.is_shutdown():
+    #     head_action.look_at(1.2, 0.0, 0.0, "base_link")
+    #
+    #     # Get block to pick
+    #     fail_ct = 0
+    #     while not rospy.is_shutdown() and not cube_in_grapper:
+    #         rospy.loginfo("Picking object...")
+    #         grasping_client.updateScene()
+    #         cube, grasps = grasping_client.getGraspableObject()
+    #         if cube == None:
+    #             rospy.logwarn("Perception failed.")
+    #             # grasping_client.intermediate_stow()
+    #             grasping_client.stow()
+    #             head_action.look_at(1.2, 0.0, 0.0, "base_link")
+    #             continue
+    #
+    #         # Pick the block
+    #         if grasping_client.pick(cube, grasps):
+    #             cube_in_grapper = True
+    #             break
+    #         rospy.logwarn("Grasping failed.")
+    #         grasping_client.stow()
+    #         if fail_ct > 15:
+    #             fail_ct = 0
+    #             break
+    #         fail_ct += 1
 
         # Tuck the arm
         #grasping_client.tuck()
@@ -346,25 +346,25 @@ if __name__ == "__main__":
         #torso_action.move_to([0.4, ])
 
         # Place the block
-        while not rospy.is_shutdown() and cube_in_grapper:
-            rospy.loginfo("Placing object...")
-            pose = PoseStamped()
-            pose.pose = cube.primitive_poses[0]
-            pose.pose.position.y *= -1.0
-            pose.pose.position.z += 0.02
-            pose.header.frame_id = cube.header.frame_id
-            if grasping_client.place(cube, pose):
-                cube_in_grapper = False
-                break
-            rospy.logwarn("Placing failed.")
-            grasping_client.intermediate_stow()
-            grasping_client.stow()
-            if fail_ct > 15:
-                fail_ct = 0
-                break
-            fail_ct += 1
-        # Tuck the arm, lower the torso
-        grasping_client.intermediate_stow()
-        grasping_client.stow()
-        rospy.loginfo("Finished")
-        #torso_action.move_to([0.0, ])
+        # while not rospy.is_shutdown() and cube_in_grapper:
+        #     rospy.loginfo("Placing object...")
+        #     pose = PoseStamped()
+        #     pose.pose = cube.primitive_poses[0]
+        #     pose.pose.position.y *= -1.0
+        #     pose.pose.position.z += 0.02
+        #     pose.header.frame_id = cube.header.frame_id
+        #     if grasping_client.place(cube, pose):
+        #         cube_in_grapper = False
+        #         break
+        #     rospy.logwarn("Placing failed.")
+        #     grasping_client.intermediate_stow()
+        #     grasping_client.stow()
+        #     if fail_ct > 15:
+        #         fail_ct = 0
+        #         break
+            # fail_ct += 1
+        # # Tuck the arm, lower the torso
+        # grasping_client.intermediate_stow()
+        # grasping_client.stow()
+        # rospy.loginfo("Finished")
+        # #torso_action.move_to([0.0, ])
