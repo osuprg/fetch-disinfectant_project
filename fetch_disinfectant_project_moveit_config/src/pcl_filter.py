@@ -1,33 +1,16 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-# Copyright (C) 2017 Udacity Inc.
-#
-# This file is part of Robotic Arm: Pick and Place project for Udacity
-# Robotics nano-degree program
-#
-# All Rights Reserved.
 
-# Author: Harsh Pandya
 
 """
-# Modified by Anshul Paigwar
-# @email: p.anshul6@gmail.com
-#
-# Added new funtions:
-# array_to_pointcloud2
-# xyzrgb_array_to_pointcloud2
-# .
-# .
-# .
-Reference:
-https://www.programcreek.com/python/example/99841/sensor_msgs.msg.PointCloud2
+
 """
 
 
 
 # Import modules
 import rospy
-import pcl
+# import pcl
 import numpy as np
 import ctypes
 import struct
@@ -45,7 +28,8 @@ class PointCloudFilter:
 
         self.flag = 0
 
-    def ros_to_pcl(ros_cloud):
+
+    def ros_to_pcl(self, ros_cloud):
         """ Converts a ROS PointCloud2 message to a pcl PointXYZRGB
 
             Args:
@@ -54,20 +38,21 @@ class PointCloudFilter:
             Returns:
                 pcl.PointCloud_PointXYZRGB: PCL XYZRGB point cloud
         """
-        points_list = []
+        # print(ros_cloud)
+        # points_list = []
+        #
 
-        for data in pc2.read_points(ros_cloud, skip_nans=True):
-            points_list.append([data[0], data[1], data[2], data[3]])
-
-        pcl_data = pcl.PointCloud_PointXYZRGB()
-        pcl_data.from_list(points_list)
+        # pcl_data = pcl.PointCloud_PointXYZRGB()
+        # pcl_data.from_list(points_list)
 
         if self.flag == 0:
-            print (pcl_data)
+            print(ros_cloud)
+
+            for data in pc2.read_points(ros_cloud, skip_nans=True):
+                # points_list.append([data[0], data[1], data[2], data[3]])
+                print([data[0],data[1],data[2],data[3]])
             self.flag = 1
         # return pcl_data
-
-
 
     def pointcloud2_to_array(cloud_msg, squeeze=True):
         ''' Converts a rospy PointCloud2 message to a numpy recordarray
@@ -87,7 +72,16 @@ class PointCloudFilter:
         cloud_arr = cloud_arr[
             [fname for fname, _type in dtype_list if not (fname[:len(DUMMY_FIELD_PREFIX)] == DUMMY_FIELD_PREFIX)]]
 
-        if squeeze and cloud_msg.height == 1:
-            return np.reshape(cloud_arr, (cloud_msg.width,))
-        else:
-            return np.reshape(cloud_arr, (cloud_msg.height, cloud_msg.width))
+        if self.flag == 0:
+
+            self.flag = 1
+            if squeeze and cloud_msg.height == 1:
+                print(np.reshape(cloud_arr, (cloud_msg.width,)))
+            else:
+                print(np.reshape(cloud_arr, (cloud_msg.height, cloud_msg.width)))
+
+
+if __name__=="__main__":
+    rospy.init_node('pcl_filter',anonymous=True)
+    PointCloudFilter()
+    rospy.spin()
