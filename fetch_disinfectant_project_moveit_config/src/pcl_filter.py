@@ -15,20 +15,28 @@ from geometry_msgs.msg import Point32, PolygonStamped
 from std_msgs.msg import Header
 from shapely import geometry
 
-class PointCloudFilter:
+class pcl_filter:
     def __init__(self):
         # Initialize Subscribers
         self.pointcloud2_sub = rospy.Subscriber("/head_camera/depth_downsample/points"  , PointCloud2    ,self.pointcloud_data, queue_size=1)
+        # self.pointcloud2_sub = rospy.Subscriber("/octomap_point_cloud_centers"  , PointCloud2    ,self.pointcloud_data, queue_size=1)
         self.plane_poly_sub  = rospy.Subscriber("/best_fit_plane_poly"                  , PolygonStamped ,self.pcl_filter, queue_size=1)
 
         # Initialize PointCloud Publisher
         self.pointcloud_pub = rospy.Publisher("/filtered_cloud", PointCloud, queue_size=1)
 
-        # Initialize filt_cloud as a PointCloud message type
-        self.filt_cloud = PointCloud()
-        self.filt_cloud.header = Header()
-        self.filt_cloud.header.stamp = rospy.Time.now()
-        self.filt_cloud.header.frame_id = 'base_link'
+        # Initialize the camera PointCloud message type. This will be transfomed
+        # to a the base_link frame_id
+        self.camera_cloud = PointCloud()
+        self.camera_cloud.header = Header()
+        self.camera_cloud.header.stamp = rospy.Time.now()
+        self.camera_cloud.header.frame_id = '/head_camera_depth_optical_frame'#/odom
+
+        # Initialize filtered_cloud as a PointCloud message type
+        self.filtered_cloud = PointCloud()
+        self.filtered_cloud.header = Header()
+        self.filtered_cloud.header.stamp = rospy.Time.now()
+        self.filtered_cloud.header.frame_id = '/base_link'
 
         # Intialize pcl_data as an empty list
         self.pcl_data = []
@@ -39,14 +47,16 @@ class PointCloudFilter:
     def pointcloud_data(self,ros_cloud):
         # Store pointcloud2 data
         self.cloud = ros_cloud
+        # print("made it here")
 
-    def pcl_filter(self, polygon):
-        # Run transformer function to get transform from the head_camera_depth_optical_frame
-        # to the base_link
-        trans,_ = self.transformer()
+    def pcl_filter(self,polygon):
+        self.camera_cloud.points=[]
         # For loop to extract ros_cloud data into a list of x,y,z, and RGB (float)
         for data in pc2.read_points(self.cloud, skip_nans=True):
-            self.pcl_data.append([trans[0] + data[2], trans[1] - data[0], trans[2] - data[1]])
+            self.camera_cloud.points.append(Point32(data[0],data[1],data[2]))
+
+        transformed_cloud = self.transform_pointcloud(self.camera_cloud)
+        # print(transformed_cloud)
 
         # Intialize region as a list.
         region = []
@@ -55,31 +65,37 @@ class PointCloudFilter:
         for vertices in polygon.polygon.points:
             region.append([vertices.x,vertices.y])
 
-        for points in self.pcl_data:
-            X = points[0]
-            Y = points[1]
+
+        self.filtered_cloud.points=[]
+        for points in transformed_cloud.points: #self.pcl_data:
+            X = points.x
+            Y = points.y
+
             line = geometry.LineString(region)
             point = geometry.Point(X, Y)
             polygon = geometry.Polygon(line)
-
+            # print(polygon.contains(point))
             if polygon.contains(point) == True:
-                self.filt_cloud.points.append(Point32(points[0],points[1],points[2]))
+                self.filtered_cloud.points.append(Point32(points.x,points.y,points.z))
+            # self.filt_cloud.points.append(Point32(points[0],points[1],points[2]))
 
         # Publish filtered point_cloud data
-        self.pointcloud_pub.publish(self.filt_cloud)
+        self.pointcloud_pub.publish(self.filtered_cloud)
+
 
         # Reset filtered data points.
-        del self.filt_cloud.points[:], self.pcl_data[:]
+        # del self.filtered_cloud.points[:], self.camera_cloud.points[:], self.pcl_data[:]
 
 
-    def transformer(self):
+
+    def transform_pointcloud(self,point_cloud):
         listener = tf.TransformListener()
 
         while not rospy.is_shutdown():
             try:
-                (trans,rot) = listener.lookupTransform("/base_link" ,"/head_camera_depth_optical_frame",  rospy.Time(0))
-                return trans,rot
-                if trans:
+                new_cloud = listener.transformPointCloud("/base_link" ,point_cloud)
+                return new_cloud
+                if new_cloud:
                     break
         # This will give you the coordinate of the child in the parent frame
             except (tf.LookupException, tf.ConnectivityException,tf.ExtrapolationException):
@@ -87,5 +103,5 @@ class PointCloudFilter:
 
 if __name__=="__main__":
     rospy.init_node('pcl_filter',anonymous=True)
-    PointCloudFilter()
+    pcl_filter()
     rospy.spin()
