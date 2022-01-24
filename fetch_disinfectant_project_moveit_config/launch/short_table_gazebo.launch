@@ -23,7 +23,8 @@
  </include>
 
  <!-- Oh, you wanted a robot? -->
- <include file="$(find fetch_gazebo)/launch/include/$(arg robot).launch.xml" />
+ <!-- <include file="$(find fetch_gazebo)/launch/include/$(arg robot).launch.xml" /> -->
+ <include file="$(find fetch_disinfectant_project_moveit_config)/launch/include/$(arg robot).launch.xml" />
 
  <include file="$(find fetch_gazebo_demo)/launch/fetch_nav.launch" />
 
