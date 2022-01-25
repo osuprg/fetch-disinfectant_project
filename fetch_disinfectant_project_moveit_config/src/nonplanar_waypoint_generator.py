@@ -50,7 +50,7 @@ class Waypoint_generator:
         self.waypoints_marker = Marker()
         self.waypoints_marker.header = self.header
         self.waypoints_marker.type = Marker.ARROW
-        self.waypoints_marker.action = Marker.ADD
+        # self.waypoints_marker.action = Marker.ADD
         # self.waypoints_marker.id = 0
         self.waypoints_marker.scale.x = 0.04
         self.waypoints_marker.scale.y = 0.03
@@ -108,6 +108,11 @@ class Waypoint_generator:
         cloud = pv.PolyData(np.c_[self.cloud_x, self.cloud_y, self.cloud_z])
         surf = cloud.delaunay_2d()
 
+        self.waypoints_marker.action = Marker.DELETEALL
+        self.waypoints_marker_pub.publish(self.waypoints_marker)
+
+
+        self.waypoints_marker.action = Marker.ADD
 
 
         # Create lists and array of waypoints to publish
@@ -143,13 +148,21 @@ class Waypoint_generator:
             #     qz = abs(qz)
 
 
+
+
             # print(qx,qy,qz,qw)
             # print(' ')
-            
+
+            # project new point
+            flipped_normal = [-surf.point_normals[index][0], -surf.point_normals[index][1], -surf.point_normals[index][2]]
+            unit_vector = flipped_normal/np.linalg.norm(flipped_normal)
+            offset = self.offset * unit_vector
+            print(unit_vector)
+
             p = Pose()
-            p.position.x = px[i]
-            p.position.y = py[i]
-            p.position.z = max(z_val) + self.offset
+            p.position.x = px[i] #+ offset[0]#px[i] + offset[0]
+            p.position.y = py[i] #+ offset[1]#py[i] + offset[1]
+            p.position.z = max(z_val) + offset[2]#max(z_val) + self.offset
             p.orientation.x = qx
             p.orientation.y = qy
             p.orientation.z = qz
