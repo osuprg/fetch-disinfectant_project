@@ -20,6 +20,8 @@ You also need to pip3 install:
 * rospkg
 * scipy
 * sympy
+* planar
+* pyvista
 
 
 ### Build
