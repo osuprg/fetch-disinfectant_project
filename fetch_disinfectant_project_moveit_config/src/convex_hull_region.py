@@ -24,7 +24,6 @@ class Convex_hull_region:
         self.IM_poly_pub      = rospy.Publisher('IM_poly'               ,PolygonStamped    ,queue_size=1)
         self.plane_poly_pub   = rospy.Publisher('best_fit_plane_poly'   ,PolygonStamped    ,queue_size=1)
         self.plane_marker_pub = rospy.Publisher('best_fit_plane_marker' ,Marker            ,queue_size=1)
-        self.data_array_pub   = rospy.Publisher('data_array'            ,numpy_msg(Floats) ,queue_size=1)
 
         # Setup header
         self.header = Header()
@@ -52,8 +51,6 @@ class Convex_hull_region:
         self.plane_marker.color.r = 1.0
         self.plane_marker.color.g = 0
         self.plane_marker.color.b = 0
-        # self.plane_marker.pose.orientation.w = -1.0
-
 
         # Intialize X,Y, and Z lists for the IM positions
         self.X = []
@@ -83,11 +80,6 @@ class Convex_hull_region:
         # Initialize the verticies of the convex hull of the IM's
         self.convex_hull_verticies = None
 
-        # Initialize height offset value
-        self.offset_val = 0
-
-        #
-        self.offset = None
 
     def best_fit_plane_callback(self,arr_msg):
         # Conditional statement to process arr_msg
@@ -128,19 +120,6 @@ class Convex_hull_region:
             #print("%f x + %f y + %f = z" % (fit[0], fit[1], fit[2]))
             #print("Normal vector: < {0}, {1}, {2}> ".format(self.a,self.b,self.c))
 
-            self.plane_offset()
-            self.plane_offset(offset=True)
-
-    def plane_offset(self,offset=False):
-        if offset == True:
-            self.offset = True
-            new_height = 1+self.offset_val
-            self.a = self.a/new_height
-            self.b = self.b/new_height
-            self.c = self.c/new_height
-            self.projection_on_plane()
-        else:
-            self.offset = False
             self.projection_on_plane()
 
 
@@ -277,34 +256,25 @@ class Convex_hull_region:
             self.IM_polygon.polygon.points.append(Point32(self.X[e],self.Y[e],self.Z[e]))
             hull_coord_2D.append(self.coordinates_2D[e])
 
+        # update the coordinates_2D to only consider convex hull coords.
+        self.coordinates_2D = np.array(hull_coord_2D)
 
-        if self.offset == True:
-            # update the coordinates_2D to only consider convex hull coords.
-            self.coordinates_2D = np.array(hull_coord_2D)
+        # Begin triangulation of the polygon
+        self.triangulation_polygon()
 
-            # Begin array_publisher function
-            self.array_publisher()
+        # Publish IM_polygon.
+        self.IM_poly_pub.publish(self.IM_polygon)
 
-            # Begin clear_parameters function
-            self.clear_lists()
+        # Publish Plane_polygon.
+        self.plane_poly_pub.publish(self.plane_polygon)
 
-        else:
-            # Begin triangulation of the polygon
-            self.triangulation_polygon()
-
-            # Publish IM_polygon.
-            self.IM_poly_pub.publish(self.IM_polygon)
-
-            # Publish Plane_polygon.
-            self.plane_poly_pub.publish(self.plane_polygon)
-
-            # Begin clear_parameters function
-            self.clear_lists()
+        # Begin clear_parameters function
+        self.clear_lists()
 
 
     def triangulation_polygon(self):
         # Run Delaunay function on the self.coodinates to get all the vertices
-        # of the trianglies in the the polygon.
+        # of the triangles in the the polygon.
         triangulation_points = []
         triangulation = Delaunay(self.coordinates_2D)
 
@@ -321,14 +291,6 @@ class Convex_hull_region:
         # wipe the previous data from lists
         del self.plane_polygon.polygon.points[:]
         del self.IM_polygon.polygon.points[:]
-
-
-    def array_publisher(self):
-        # Publish the coordinates of the 2D subplane and Inverse Matrix in a
-        # single numpy array msg.
-        a = np.array(self.M_inv.ravel(), dtype=np.float32)
-        b = np.array(self.coordinates_2D.ravel(), dtype=np.float32)
-        self.data_array_pub.publish(np.concatenate((a,b)))
 
 
 
