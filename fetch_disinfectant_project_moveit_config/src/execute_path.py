@@ -33,7 +33,7 @@ class ExecutePath(object):
     # Instantiate a `MoveGroupCommander`_ object.  This object is an interface
     # to one group of joints.
     self.group = moveit_commander.MoveGroupCommander("arm_with_torso")
-    self.group.set_end_effector_link("gripper_link")
+    self.group.set_end_effector_link("ee_link") #use gripper_link if it is planar disinfection
 
     # We create a `DisplayTrajectory`_ publisher which is used later to publish
     # trajectories for RViz to visualize:
@@ -87,6 +87,7 @@ class ExecutePath(object):
           self.path_to_goal.tuck_pose()
 
   def plan_cartesian_path(self, waypoints):
+
     ## Cartesian Paths
     (plan, fraction) = self.group.compute_cartesian_path(
                                        waypoints,   # waypoints to follow
