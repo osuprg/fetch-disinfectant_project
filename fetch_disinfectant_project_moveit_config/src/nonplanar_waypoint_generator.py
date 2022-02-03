@@ -6,7 +6,7 @@ import random
 import numpy as np
 import pyvista as pv
 
-from scipy import spatial
+from scipy import spatial, stats
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Pose,PoseArray,Quaternion,Point, PolygonStamped
 from sensor_msgs.msg import PointCloud
@@ -14,8 +14,9 @@ from std_msgs.msg import Header
 from rospy.numpy_msg import numpy_msg
 from rospy_tutorials.msg import Floats
 from grid_based_sweep_coverage_path_planner import planning_animation,planning
+from scipy.spatial.transform import Rotation as R
 
-class Waypoint_generator:
+class Nonplanar_waypoint_generator:
     def __init__(self):
         # Initialize Subscribers
         self.plane_poly_sub  = rospy.Subscriber("/best_fit_plane_poly"  ,PolygonStamped ,self.polygon_callback  ,queue_size=1)
@@ -50,11 +51,9 @@ class Waypoint_generator:
         self.waypoints_marker = Marker()
         self.waypoints_marker.header = self.header
         self.waypoints_marker.type = Marker.ARROW
-        # self.waypoints_marker.action = Marker.ADD
-        # self.waypoints_marker.id = 0
-        self.waypoints_marker.scale.x = 0.04
-        self.waypoints_marker.scale.y = 0.03
-        self.waypoints_marker.scale.z = 0.01
+        self.waypoints_marker.scale.x = 0.03
+        self.waypoints_marker.scale.y = 0.01
+        self.waypoints_marker.scale.z = 0.005
         self.waypoints_marker.color.a = 1
         self.waypoints_marker.color.r = 0
         self.waypoints_marker.color.g = 0
@@ -70,108 +69,119 @@ class Waypoint_generator:
 
 
     def polygon_callback(self,polygon_msg):
+        # Store the x and y positions of polygon message in separate lists
         self.X = []
         self.Y = []
 
+        # For loop to extract x and y coordinates of the polygon
         for vertices in polygon_msg.polygon.points:
             self.X.append(vertices.x)
             self.Y.append(vertices.y)
 
+        # Append first x and y coordinates to close the polygon loop
         self.X.append(self.X[0])
         self.Y.append(self.Y[0])
 
 
     def data_pointcloud(self,pointcloud_msg):
+        # Store the x, y, and z coordinates of the filtered pointcloud in separate lists
         self.cloud_x = []
         self.cloud_y = []
         self.cloud_z = []
 
+        # For loop to extract x, y, and z coordinates of the pointcloud
         for i in range(len(pointcloud_msg.points)):
             self.cloud_x.append(pointcloud_msg.points[i].x)
             self.cloud_y.append(pointcloud_msg.points[i].y)
             self.cloud_z.append(pointcloud_msg.points[i].z)
 
+        # Run waypoint planner for non-planar surfaces.
         self.waypoint_planner()
 
 
     def waypoint_planner(self):
 
-        # Acquire the planned x an y values from the planning function
+        # Acquire the planned x an y values from the planning function in the
+        # grid_based_sweep_coverage_path_planner python script.
         px,py = planning(self.X, self.Y, self.resolution)
 
-
-        # Create KD tree for filtered cloud
+        # Create space-partition data strucutre (KD tree) for filtered cloud
         tree = spatial.KDTree(np.c_[self.cloud_x,self.cloud_y])
 
 
-        # simply pass the numpy points to the PolyData constructor
+        # Pass the pointcloud points to the PolyData constructor. Then run the
+        # delaunay_2d triangulation function on the PolyData
         cloud = pv.PolyData(np.c_[self.cloud_x, self.cloud_y, self.cloud_z])
         surf = cloud.delaunay_2d()
 
+        # Delete previous ARROW markers and publish the empty data structure
         self.waypoints_marker.action = Marker.DELETEALL
         self.waypoints_marker_pub.publish(self.waypoints_marker)
 
-
+        # Set marker action to add for new ARROW markers
         self.waypoints_marker.action = Marker.ADD
 
 
-        # Create lists and array of waypoints to publish
+        # Create lists for waypoints and waypoint markers that will be publish
         poses = []
         marker_list = []
 
-        # run KD tree function on planned x and y points
+
         for i in range(len(px)):
-            # Get index values of closest neighbors
-            closest_points_ii = tree.query_ball_point([px[i],py[i]], 0.075)
+            # Get index values closest neighbors of the planned x and y values
+            # in the KDtree
+            closest_points_ii = tree.query_ball_point([px[i],py[i]], 0.025)
 
-
+            # If there are no closest neighbors, then continue to next iteration
+            # of the for loop
             if len(closest_points_ii ) == 0:
                 continue
 
-            z_val = []
+            self.z_val = []
             # append the z values of the point cloud of the indexed values.
             for j in closest_points_ii:
-                z_val.append(self.cloud_z[j])
+                self.z_val.append(self.cloud_z[j])
 
-            # Find the index of the max z value
-            index = z_val.index(max(z_val))
+            # Remove any z outliers of the stored data.
+            self.remove_outliers()
 
-            # convert the point normal of the max z value to euler angles
-            euler_x = np.arccos(surf.point_normals[index][0])
-            euler_y = np.arccos(surf.point_normals[index][1])
-            euler_z = np.arccos(surf.point_normals[index][2])
+            # Find the index of the max z value from the closest neighbors point cloud
+            index = closest_points_ii[self.z_val.index(max(self.z_val))]
 
-            # convert to Quaternion values
-            qx,qy,qz,qw = self.euler_to_quaternion(euler_x, euler_y , euler_z )
-            # if qx > 0 and qz < 0:
-            #     qx = -qx
-            #     qz = abs(qz)
+            # compute the point_normal angles relative to the ee_link transform frame
+            alpha = np.arccos(surf.point_normals[index][0])-np.pi/2
+            gamma = np.arccos(surf.point_normals[index][1])+np.pi
+            beta  = np.arccos(surf.point_normals[index][2])+np.pi/2
 
+            # Run rotation matrix of the three rotation angles
+            mat = self.rotation_matrix(gamma, beta, alpha)
+            # r = R.from_rotvec([[0    , 0   , alpha],
+            #                    [0    , beta, 0    ],
+            #                    [0    , 0   , gamma]   ])
 
+            # Obtain Quaternion values from rotational matrix
+            m = R.from_matrix(mat)
+            q=m.as_quat()
 
-
-            # print(qx,qy,qz,qw)
-            # print(' ')
 
             # project new point
             flipped_normal = [-surf.point_normals[index][0], -surf.point_normals[index][1], -surf.point_normals[index][2]]
             unit_vector = flipped_normal/np.linalg.norm(flipped_normal)
             offset = self.offset * unit_vector
-            print(unit_vector)
+            # print(unit_vector)
 
+            # Include characteristics of a pose
             p = Pose()
-            p.position.x = px[i] #+ offset[0]#px[i] + offset[0]
-            p.position.y = py[i] #+ offset[1]#py[i] + offset[1]
-            p.position.z = max(z_val) + offset[2]#max(z_val) + self.offset
-            p.orientation.x = qx
-            p.orientation.y = qy
-            p.orientation.z = qz
-            p.orientation.w = qw
+            p.position.x = self.cloud_x[index] + offset[0]
+            p.position.y = self.cloud_y[index] + offset[1]
+            p.position.z = self.cloud_z[index] + offset[2]
+            p.orientation.x = q[0]
+            p.orientation.y = q[1]
+            p.orientation.z = q[2]
+            p.orientation.w = q[3]
             poses.append(p)
 
-
-            # Append position values for the marker
-            # marker_list.append(Point(p.position.x, p.position.y, p.position.z))
+            # Create new marker id and pose to be published
             self.waypoints_marker.id = i
             self.waypoints_marker.pose = p
             self.waypoints_marker_pub.publish(self.waypoints_marker)
@@ -183,22 +193,42 @@ class Waypoint_generator:
         # Publish poses for computeCartesianPath
         self.waypoints_pub.publish(self.waypoints)
 
-        ## Publish markers for waypoints
-        # self.waypoints_marker.points = marker_list
-        # self.waypoints_marker_pub.publish(self.waypoints_marker)
-
+        # Clear out cloud data for new updated data
         del self.cloud_x[:], self.cloud_y[:], self.cloud_z[:]
 
-    def euler_to_quaternion(self,yaw, pitch, roll):
-        qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
-        qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
-        qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
-        qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+    def rotation_matrix(self,gamma, beta, alpha):
+        R_z = np.array([[ np.cos(gamma),-np.sin(gamma), 0],
+                        [ np.sin(gamma), np.cos(gamma), 0],
+                        [ 0            , 0            , 1]])
 
-        return [qx, qy, qz, qw]
+        R_y = np.array([[ np.cos(beta), 0, -np.sin(beta)],
+                        [ 0           , 1,  0           ],
+                        [ np.sin(beta), 0,  np.cos(beta)]])
+
+        R_x = np.array([[ np.cos(alpha), -np.sin(alpha), 0],
+                        [ np.sin(alpha),  np.cos(alpha), 0],
+                        [ 0            ,  0            , 1]])
+
+        # print(R_z)
+        # print(R_y)
+        # print(R_x)
+        return np.linalg.multi_dot([R_z,R_y,R_x])
+
+    def remove_outliers(self, m = 2):
+            # Find z score of the z_val list
+            z = np.abs(stats.zscore(self.z_val))
+            # Locate the index of where z scores are larger than the m value (sigma)
+            locs = np.where(z > m)
+            reversed = locs[0][::-1]
+
+            # Pop the large zscore values out.
+            for ele in reversed:
+                self.z_val.pop(ele)
+
+
 
 if __name__=="__main__":
     # Initialize the node
-    rospy.init_node('waypoint_generator')
-    Waypoint_generator()
+    rospy.init_node('nonplanar_waypoint_generator')
+    Nonplanar_waypoint_generator()
     rospy.spin()
