@@ -31,9 +31,9 @@ class Head(object):
     def __init__(self):
         self.traj_client = actionlib.SimpleActionClient(PAN_TILT_ACTION_NAME, control_msgs.msg.FollowJointTrajectoryAction)
         self.point_client = actionlib.SimpleActionClient(LOOK_AT_ACTION_NAME, control_msgs.msg.PointHeadAction)
-        while not self.traj_client.wait_for_server(timeout=rospy.Duration(2)) and not rospy.is_shutdown():
+        while not self.traj_client.wait_for_server(timeout=rospy.Duration(1)) and not rospy.is_shutdown():
             rospy.logwarn('Waiting for head trajectory server...')
-        while not self.point_client.wait_for_server(timeout=rospy.Duration(2)) and not rospy.is_shutdown():
+        while not self.point_client.wait_for_server(timeout=rospy.Duration(1)) and not rospy.is_shutdown():
             rospy.logwarn('Waiting for head pointing server...')
 
     def look_at(self, frame_id, x, y, z):
@@ -91,14 +91,16 @@ if __name__ == "__main__":
 
     # # Look at (i.e., point head)
     frame_id = 'base_link'
-    x, y, z = 10, -7, 0
-    head.look_at(frame_id, x, y, z)
-    head.look_at(frame_id, 10,7,0)
+    # x, y, z = 10, 0, 0
+    # head.look_at(frame_id, x, y, z)
+    head.pan_tilt(.2,0.4)
+    # head.pan_tilt(0,0.4)
+    # head.look_at(frame_id, 10,7,0)
     # head.look_at(frame_id, 10, 7,0)
-    head.look_at(frame_id, 10, 7, -5)
-    head.look_at(frame_id, 10,-7, -5)
-    head.look_at(frame_id, 10,0,-3)
-    head.look_at(frame_id, 10,0,0)
+    # head.look_at(frame_id, 10, 7, -5)
+    # head.look_at(frame_id, 10,-7, -5)
+    # head.look_at(frame_id, 10,0,-5)
+    # head.look_at(frame_id, 10,0,0)
 
     # Pan tilt (values are in radians)
     # pan, tilt = -1, 0
