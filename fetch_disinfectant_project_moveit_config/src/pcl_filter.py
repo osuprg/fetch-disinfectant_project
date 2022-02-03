@@ -58,34 +58,30 @@ class pcl_filter:
         transformed_cloud = self.transform_pointcloud(self.camera_cloud)
         # print(transformed_cloud)
 
-        # Intialize region as a list.
+        # Intialize region as a list
         region = []
 
-        # Run forloop to store polygon vertices in list named region.
+        # Run forloop to store polygon vertices in list named region
         for vertices in polygon.polygon.points:
             region.append([vertices.x,vertices.y])
 
-
+        # Set self.filtered_cloud.points as a filter
         self.filtered_cloud.points=[]
+        # Use for loop to extract x and y points from the transformed cloud
         for points in transformed_cloud.points: #self.pcl_data:
             X = points.x
             Y = points.y
 
+            # Check to see if the x and y points are in the polygon region. If so
+            # then append the x,y, and z points to the filtered cloud.
             line = geometry.LineString(region)
             point = geometry.Point(X, Y)
             polygon = geometry.Polygon(line)
-            # print(polygon.contains(point))
             if polygon.contains(point) == True:
                 self.filtered_cloud.points.append(Point32(points.x,points.y,points.z))
-            # self.filt_cloud.points.append(Point32(points[0],points[1],points[2]))
 
         # Publish filtered point_cloud data
         self.pointcloud_pub.publish(self.filtered_cloud)
-
-
-        # Reset filtered data points.
-        # del self.filtered_cloud.points[:], self.camera_cloud.points[:], self.pcl_data[:]
-
 
 
     def transform_pointcloud(self,point_cloud):
@@ -97,7 +93,6 @@ class pcl_filter:
                 return new_cloud
                 if new_cloud:
                     break
-        # This will give you the coordinate of the child in the parent frame
             except (tf.LookupException, tf.ConnectivityException,tf.ExtrapolationException):
                 pass
 
