@@ -6,7 +6,7 @@ import numpy as np
 from std_msgs.msg import String, Float32
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton,QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QGroupBox, QRadioButton, QInputDialog
 from PyQt5.QtCore import Qt
-from slider import SliderDisplay
+
 
 
 class Interface(QMainWindow):
