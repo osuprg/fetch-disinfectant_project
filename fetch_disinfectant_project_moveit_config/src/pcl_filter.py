@@ -43,6 +43,9 @@ class pcl_filter:
         # Initialize self.cloud for data storage in pointcloud_data callback function
         self.cloud = None
 
+        self.listener = tf.TransformListener()
+
+
     def pointcloud_data(self,ros_cloud):
         # Store pointcloud2 data
         self.cloud = ros_cloud
@@ -84,11 +87,10 @@ class pcl_filter:
 
 
     def transform_pointcloud(self,point_cloud):
-        listener = tf.TransformListener()
-
         while not rospy.is_shutdown():
             try:
-                new_cloud = listener.transformPointCloud("/base_link" ,point_cloud)
+                new_cloud = self.listener.transformPointCloud("/base_link" ,point_cloud)
+                # print("made it here")
                 return new_cloud
                 if new_cloud:
                     break
