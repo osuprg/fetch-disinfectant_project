@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0.55  0.70  0.65  0 0 0 1 base_link table_corner 100" />
+  <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0.10 -0.30  0.10  0 0 0 1 table_corner book      100" />
+  <node pkg="tf" type="static_transform_publisher" name="link3_broadcaster" args="0.15 -0.50  0.20  0 0 0 1 table_corner ramp      100" />
+  <node pkg="tf" type="static_transform_publisher" name="link4_broadcaster" args="0.10 -0.70  0.00  0 0 0 1 table_corner surface   100" />
+</launch>
