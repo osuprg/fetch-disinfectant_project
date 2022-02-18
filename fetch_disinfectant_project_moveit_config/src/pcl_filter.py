@@ -43,14 +43,18 @@ class pcl_filter:
         # Initialize self.cloud for data storage in pointcloud_data callback function
         self.cloud = None
 
+        # Intialize tf.Transformlister
         self.listener = tf.TransformListener()
+        self.check = 1
 
 
     def pointcloud_data(self,ros_cloud):
         # Store pointcloud2 data
         self.cloud = ros_cloud
-        # print("made it here")
-
+        if self.check == 1:
+            print("made it here")
+            self.check = 2
+            
     def pcl_filter(self,polygon):
         self.camera_cloud.points=[]
         # For loop to extract ros_cloud data into a list of x,y,z, and RGB (float)

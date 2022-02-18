@@ -55,10 +55,10 @@ class ExecutePath(object):
     # Set path_to_goal to the FollowTrajectoryClient Class
     self.path_to_goal=FollowTrajectoryClient()
 
-    # Set trajectory velocity for cartesian path
+    # Set default trajectory velocity for cartesian path
     self.vel = 0.8
 
-    # Set acceleration for cartesian path
+    # Set default acceleration for cartesian path
     self.accel = 0.7
 
   def waypoint_callback(self,msg):

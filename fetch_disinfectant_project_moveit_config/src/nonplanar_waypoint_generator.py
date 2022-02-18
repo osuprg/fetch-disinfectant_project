@@ -126,7 +126,86 @@ class Nonplanar_waypoint_generator:
         poses = []
         marker_list = []
 
+########################## Test Case 1: Fixed height ###########################
+        # z_index = self.cloud_z.index(max(self.self.cloud_z))
+        # for i in range(len(px)):
+        #     # Get index values closest neighbors of the planned x and y values
+        #     # in the KDtree
+        #     closest_points_ii = tree.query_ball_point([px[i],py[i]], 0.025)
+        #
+        #     # If there are no closest neighbors, then continue to next iteration
+        #     # of the for loop
+        #     if len(closest_points_ii ) == 0:
+        #         continue
+        #
+        #     self.z_val = []
+        #     # append the z values of the point cloud of the indexed values.
+        #     for j in closest_points_ii:
+        #         self.z_val.append(self.cloud_z[j])
+        #
+        #     # Remove any z outliers of the stored data.
+        #     self.remove_outliers()
+        #
+        #     # Find the index of the max z value from the closest neighbors point cloud
+        #     index = closest_points_ii[self.z_val.index(max(self.z_val))]
+        #
+        #     # Include characteristics of a pose
+        #     p = Pose()
+        #     p.position.x = self.cloud_x[index]
+        #     p.position.y = self.cloud_y[index]
+        #     p.position.z = self.cloud_z[z_index]
+        #     p.orientation.x = 0
+        #     p.orientation.y = 0
+        #     p.orientation.z = 0
+        #     p.orientation.w = 1
+        #     poses.append(p)
+        #
+        #     # Create new marker id and pose to be published
+        #     self.waypoints_marker.id = i
+        #     self.waypoints_marker.pose = p
+        #     self.waypoints_marker_pub.publish(self.waypoints_marker)
 
+################### Test Case 2: Height Change in Z axis Only #################
+        # for i in range(len(px)):
+        #     # Get index values closest neighbors of the planned x and y values
+        #     # in the KDtree
+        #     closest_points_ii = tree.query_ball_point([px[i],py[i]], 0.025)
+        #
+        #     # If there are no closest neighbors, then continue to next iteration
+        #     # of the for loop
+        #     if len(closest_points_ii ) == 0:
+        #         continue
+        #
+        #     self.z_val = []
+        #     # append the z values of the point cloud of the indexed values.
+        #     for j in closest_points_ii:
+        #         self.z_val.append(self.cloud_z[j])
+        #
+        #     # Remove any z outliers of the stored data.
+        #     self.remove_outliers()
+        #
+        #     # Find the index of the max z value from the closest neighbors point cloud
+        #     index = closest_points_ii[self.z_val.index(max(self.z_val))]
+        #
+        #
+        #     # Include characteristics of a pose
+        #     p = Pose()
+        #     p.position.x = self.cloud_x[index]
+        #     p.position.y = self.cloud_y[index]
+        #     p.position.z = self.cloud_z[index] + self.offset
+        #     p.orientation.x = 0
+        #     p.orientation.y = 0
+        #     p.orientation.z = 0
+        #     p.orientation.w = 1
+        #     poses.append(p)
+        #
+        #     # Create new marker id and pose to be published
+        #     self.waypoints_marker.id = i
+        #     self.waypoints_marker.pose = p
+        #     self.waypoints_marker_pub.publish(self.waypoints_marker)
+
+
+################ Test Case 3: Offset distance from point normal ################
         for i in range(len(px)):
             # Get index values closest neighbors of the planned x and y values
             # in the KDtree
@@ -148,16 +227,16 @@ class Nonplanar_waypoint_generator:
             # Find the index of the max z value from the closest neighbors point cloud
             index = closest_points_ii[self.z_val.index(max(self.z_val))]
 
-            # compute the point_normal angles relative to the ee_link transform frame
-            alpha = np.arccos(surf.point_normals[index][0])-np.pi/2
-            gamma = np.arccos(surf.point_normals[index][1])+np.pi
-            beta  = np.arccos(surf.point_normals[index][2])+np.pi/2
+            # compute the point_normal angles
+            alpha = np.arccos(surf.point_normals[index][0])#-np.pi/2
+            gamma = np.arccos(surf.point_normals[index][1])#+np.pi
+            beta  = np.arccos(surf.point_normals[index][2])#+np.pi/2
 
             # Run rotation matrix of the three rotation angles
-            mat = self.rotation_matrix(gamma, beta, alpha)
+            mat = self.rotation_matrix(alpha,gamma,beta)
             # r = R.from_rotvec([[0    , 0   , alpha],
-            #                    [0    , beta, 0    ],
-            #                    [0    , 0   , gamma]   ])
+            #                    [0    , gamma, 0],
+            #                    [0    , 0   , beta]   ])
 
             # Obtain Quaternion values from rotational matrix
             m = R.from_matrix(mat)
@@ -186,7 +265,6 @@ class Nonplanar_waypoint_generator:
             self.waypoints_marker.pose = p
             self.waypoints_marker_pub.publish(self.waypoints_marker)
 
-
         # assisn poses to the PoseArray, self,waypoints.
         self.waypoints.poses = poses
 
@@ -196,25 +274,25 @@ class Nonplanar_waypoint_generator:
         # Clear out cloud data for new updated data
         del self.cloud_x[:], self.cloud_y[:], self.cloud_z[:]
 
-    def rotation_matrix(self,gamma, beta, alpha):
-        R_z = np.array([[ np.cos(gamma),-np.sin(gamma), 0],
-                        [ np.sin(gamma), np.cos(gamma), 0],
+    def rotation_matrix(self,alpha, gamma, beta):
+        R_z = np.array([[ np.cos(alpha),-np.sin(alpha), 0],
+                        [ np.sin(alpha), np.cos(alpha), 0],
                         [ 0            , 0            , 1]])
 
-        R_y = np.array([[ np.cos(beta), 0, -np.sin(beta)],
+        R_y = np.array([[ np.cos(gamma), 0, -np.sin(gamma)],
                         [ 0           , 1,  0           ],
-                        [ np.sin(beta), 0,  np.cos(beta)]])
+                        [ np.sin(gamma), 0,  np.cos(gamma)]])
 
-        R_x = np.array([[ np.cos(alpha), -np.sin(alpha), 0],
-                        [ np.sin(alpha),  np.cos(alpha), 0],
-                        [ 0            ,  0            , 1]])
+        R_x = np.array([[ np.cos(beta), -np.sin(beta), 0],
+                        [ np.sin(beta),  np.cos(beta), 0],
+                        [ 0            ,  0          , 1]])
 
         # print(R_z)
         # print(R_y)
         # print(R_x)
         return np.linalg.multi_dot([R_z,R_y,R_x])
 
-    def remove_outliers(self, m = 2):
+    def remove_outliers(self, m = 3):
             # Find z score of the z_val list
             z = np.abs(stats.zscore(self.z_val))
             # Locate the index of where z scores are larger than the m value (sigma)
