@@ -9,19 +9,22 @@ import moveit_msgs.msg
 import numpy as np
 
 from threading import Thread
-from moveit_msgs.msg import MoveItErrorCodes, PlanningScene
+from moveit_msgs.msg import MoveItErrorCodes, PlanningScene, RobotTrajectory
 from moveit_python import MoveGroupInterface, PlanningSceneInterface
-from std_msgs.msg import String, Int16, Float32
+from std_msgs.msg import String, Int32, Float32
 from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion, PoseArray
 
 class ExecutePath(object):
 
   def __init__(self):
     super(ExecutePath, self).__init__()
-
-    self.gui_input_sub        = rospy.Subscriber('gui_input', String, self.interface_callback)
-    self.waypoints_sub        = rospy.Subscriber('waypoints', PoseArray, self.waypoint_callback)
+    # Initialize subscribers
+    self.gui_input_sub     = rospy.Subscriber('gui_input', String, self.interface_callback)
+    self.waypoints_sub     = rospy.Subscriber('waypoints', PoseArray, self.waypoint_callback)
     self.vel_regulator_sub = rospy.Subscriber('vel_regulator', Float32, self.vel_callback)
+
+    # Publisher
+    self.duration_pub  = rospy.Publisher('duration', Float32, queue_size=10)
 
     # First initialize `moveit_commander`
     moveit_commander.roscpp_initialize(sys.argv)
@@ -99,8 +102,12 @@ class ExecutePath(object):
                                         plan,
                                         velocity_scaling_factor = self.vel,
                                         acceleration_scaling_factor = self.accel)
+
+    t = plan.joint_trajectory.points[-1].time_from_start
+    seconds = t.to_sec()
+    self.duration_pub.publish(seconds)
+
     # Note: We are just planning, not asking move_group to actually move the robot yet:
-    print("Path has been computed")
     return plan
 
   def execute_plan(self, plan):

@@ -40,12 +40,12 @@
 
   <!-- Start Convex Hull, Plane Fitting, GUI, Waypoint Generator, and Move Group Interface nodes -->
   <node pkg="fetch_disinfectant_project_moveit_config" type="create_interactive_markers.py"   name="create_interactive_markers"   output="screen"/>
-  <!-- <node pkg="fetch_disinfectant_project_moveit_config" type="nonplanar_waypoint_generator.py" name="nonplanar_waypoint_generator" output="screen"/> -->
+  <node pkg="fetch_disinfectant_project_moveit_config" type="nonplanar_waypoint_generator.py" name="nonplanar_waypoint_generator" output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="gui.py"                          name="gui"                          output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="execute_path.py"                 name="execute_path"                 output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="convex_hull_region.py"           name="convex_hull_region"           output="screen"/>
   <node pkg="fetch_disinfectant_project_moveit_config" type="accumulation.py"                 name="accumulation"                 output="screen"/>
-  <!-- <node pkg="fetch_disinfectant_project_moveit_config" type="pcl_filter.py"                   name="pcl_filter"                   output="screen"/> -->
-
+  <node pkg="fetch_disinfectant_project_moveit_config" type="pcl_filter.py"                   name="pcl_filter"                   output="screen"/>
+  <node pkg="fetch_disinfectant_project_moveit_config" type="irradiance_vectors.py"           name="irradiance_vectors"           output="screen"/>
 
 </launch>

@@ -124,12 +124,13 @@ class Convex_hull_region:
 
 
     def projection_on_plane(self):
+        # Project a point onto a plane in 3D reference: https://stackoverflow.com/questions/9605556/
         # Create an origin point by using x and y pose of the first IM and solve for z.
         orig_x = self.X[0]
         orig_y = self.Y[0]
         orig_z = self.solve_for_z(orig_x, orig_y)
 
-        # Create unit normal vector
+        # Create unit normal vector of the best fit plane
         mag = math.sqrt(self.a**2 + self.b**2 + self.c**2)
         u_a = self.a / mag
         u_b = self.b / mag

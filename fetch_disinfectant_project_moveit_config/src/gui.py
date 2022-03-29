@@ -27,6 +27,7 @@ class Interface(QMainWindow):
         self.execute     = QPushButton('Execute Path')
         self.init_pose   = QPushButton('Initial Pose')
         self.tuck_pose   = QPushButton('Tuck Arm')
+        self.simulation  = QPushButton('Simulation')
 
         self.UV_constant_slider = QSlider(Qt.Horizontal)
         self.UV_constant_slider.setMinimum(1)
@@ -40,11 +41,9 @@ class Interface(QMainWindow):
         #
         self.S = 0.1
 
-
         # A widget to hold everything
         widget = QWidget()
         self.setCentralWidget(widget)
-
 
         # A Layout of computing Dosage at a waypoint
         UV_dosage = QGroupBox('UV Dose')
@@ -92,7 +91,7 @@ class Interface(QMainWindow):
         UV_dosage.setLayout(UV_dosage_layout)
 
 
-        # A Horizontal Layout of arm control for two configurations
+        # A Horizontal Layout for Plan and Execute
         plan_execute = QGroupBox('Plan and Execute')
         h_box = QHBoxLayout()
         h_box.addWidget(self.plan)
@@ -108,6 +107,12 @@ class Interface(QMainWindow):
         control.setLayout(h_box)
 
 
+        # A Horizontal Layout for simulation after Execute
+        simulation = QGroupBox('Irradiance Simulation')
+        h_box = QHBoxLayout()
+        h_box.addWidget(self.simulation)
+        simulation.setLayout(h_box)
+
         # Vertical merging of all the layouts
         layout = QVBoxLayout()
         widget.setLayout(layout)
@@ -115,6 +120,7 @@ class Interface(QMainWindow):
         layout.addWidget(UV_dosage)
         layout.addWidget(plan_execute)
         layout.addWidget(control)
+        layout.addWidget(simulation)
         layout.addWidget(self.quit_button)
 
         # Buttons and sliders clicked/connect
@@ -124,6 +130,7 @@ class Interface(QMainWindow):
         self.execute.clicked.connect(self.publish_command_b)
         self.init_pose.clicked.connect(self.publish_command_c)
         self.tuck_pose.clicked.connect(self.publish_command_d)
+        self.simulation.clicked.connect(self.publish_command_e)
 
         self.UV_constant_slider.valueChanged.connect(self.value_change)
 
@@ -141,6 +148,8 @@ class Interface(QMainWindow):
     def publish_command_d(self):
         self.gui_input_pub.publish("3")
         # print(3)
+    def publish_command_e(self):
+        self.gui_input_pub.publish("4")
 
     def onClicked(self):
         radioButton = self.sender()

@@ -263,6 +263,7 @@ class Nonplanar_waypoint_generator:
             # Create new marker id and pose to be published
             self.waypoints_marker.id = i
             self.waypoints_marker.pose = p
+            self.waypoints_marker.header.stamp = rospy.Time.now()
             self.waypoints_marker_pub.publish(self.waypoints_marker)
 
         # assisn poses to the PoseArray, self,waypoints.
