@@ -7,7 +7,7 @@ Install the necessary packages to run a simulation environment with a fetch robo
 
 ```
 sudo apt-get update
-sudo apt-get install ros-molodic-fetch*
+sudo apt-get install ros-melodic-fetch*
 ```
 
 You also need to install the rviz_visual_tools for the cone marker. Further information [here](https://github.com/PickNikRobotics/rviz_visual_tools/blob/melodic-devel).
