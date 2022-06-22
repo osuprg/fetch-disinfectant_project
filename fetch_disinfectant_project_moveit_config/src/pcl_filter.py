@@ -54,7 +54,8 @@ class pcl_filter:
         if self.check == 1:
             print("made it here")
             self.check = 2
-            
+
+
     def pcl_filter(self,polygon):
         self.camera_cloud.points=[]
         # For loop to extract ros_cloud data into a list of x,y,z, and RGB (float)

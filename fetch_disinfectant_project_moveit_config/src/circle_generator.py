@@ -24,16 +24,21 @@ def circle_points(r, n):
         z = [-0.3]*len(x)
 
         circles.append(np.c_[x, y, z])
-        # concatenate = np.concatenate( circles, axis=0 )
-    return circles
+        concatenate = np.concatenate( circles, axis=0 )
+    return concatenate
 
 circles = circle_points(r, n)
 # print(np.shape(circles[0]))
 # print(np.shape(circles[1]))
 # print(np.shape(circles[2]))
-print(circles)
-fig, ax = plt.subplots()
-for circle in circles:
-    ax.scatter(circle[:, 0], circle[:, 1])
-ax.set_aspect('equal')
-plt.show()
+# print(circles[0])
+# print(circles[1])
+# fig, ax = plt.subplots()
+# for circle in circles:
+#     ax.scatter(circle[:, 0], circle[:, 1])
+# ax.set_aspect('equal')
+# plt.show()
+print(len(circles))
+for e in circles:
+    print(e)
+    print("")
